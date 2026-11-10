@@ -1,0 +1,345 @@
+@import "tailwindcss";
+
+/* ------------------------------------------------------------------
+   Brand theme — change colors & fonts here and the whole site updates.
+   Default palette "Emerald & Ivory" is taken from the Zinia™ packaging:
+   deep emerald green, warm ivory and rich gold.
+   Two alternative palettes follow below (data-theme="harvest" / "sage");
+   preview them with ?theme=harvest or ?theme=sage in the address bar.
+   Bangla text falls back to Galada (stylish headings) and
+   Anek Bangla (body), since Fraunces / DM Sans have no Bangla letters.
+   ------------------------------------------------------------------ */
+@theme {
+  --font-display: "Fraunces", "Galada", ui-serif, Georgia, serif;
+  --font-sans: "DM Sans", "Anek Bangla", ui-sans-serif, system-ui, sans-serif;
+
+  --color-ink: #0f1f16;
+  --color-cream: #faf6ec;
+  --color-sand: #f1e8d4;
+
+  /* soft warm tints used for glows */
+  --color-mint-50: #fdfaf1;
+  --color-mint-100: #f6eedb;
+  --color-mint-200: #eddfbd;
+  --color-mint-300: #e4cf9c;
+
+  /* emerald green scale (from the packaging) */
+  --color-forest-50: #eef6f0;
+  --color-forest-100: #d9ebdf;
+  --color-forest-200: #b5d6c0;
+  --color-forest-300: #86b999;
+  --color-forest-400: #559873;
+  --color-forest-500: #2f7a52;
+  --color-forest-600: #1f6440;
+  --color-forest-700: #165233;
+  --color-forest-800: #0f4228;
+  --color-forest-900: #0b3520;
+  --color-forest-950: #072516;
+
+  /* gold accents */
+  --color-gold: #c39a3e;
+  --color-gold-light: #e3c57f;
+  --color-gold-dark: #94721f;
+  --color-wheat: #ecd9a6;
+
+  --animate-spin-slow: spin 28s linear infinite;
+}
+
+/* Section backgrounds per palette (default: Emerald & Ivory) */
+:root {
+  --hero-bg: radial-gradient(ellipse 65% 75% at 64% 42%, #fffdf7 0%, #f8f1e1 52%, #ede0c2 100%);
+  --arch-from: #1f6440;
+  --arch-to: #072516;
+  --tint-bg: linear-gradient(180deg, #f7f0df 0%, #ece0c3 100%);
+  --band-bg: linear-gradient(110deg, #072516 0%, #165233 52%, #072516 100%);
+  --band-fg: #faf6ec;
+  --band-glow: rgba(227, 197, 127, 0.16);
+  --band-num: linear-gradient(180deg, #f5e2ad 0%, #c39a3e 100%);
+  --production-bg: linear-gradient(180deg, #fcf9f1 0%, #f1e7d1 100%);
+  --card-bg: linear-gradient(160deg, #f8f0dc 0%, #e8d9b5 100%);
+}
+
+/* Alternative palette: Golden Harvest — warm wheat and olive */
+html[data-theme="harvest"] {
+  --color-ink: #22200f;
+  --color-cream: #fcf7ea;
+  --color-sand: #f4e7c6;
+  --color-mint-50: #fffaf0;
+  --color-mint-100: #f8ecd0;
+  --color-mint-200: #f1dcab;
+  --color-mint-300: #e9c97f;
+  --color-forest-50: #f4f5ea;
+  --color-forest-100: #e6e9cf;
+  --color-forest-200: #cdd3a3;
+  --color-forest-300: #aab673;
+  --color-forest-400: #87964c;
+  --color-forest-500: #6b7a35;
+  --color-forest-600: #556228;
+  --color-forest-700: #434e20;
+  --color-forest-800: #353d1a;
+  --color-forest-900: #2a3115;
+  --color-forest-950: #1b200d;
+  --color-gold: #c8962e;
+  --color-gold-light: #e8c271;
+  --color-gold-dark: #946b14;
+  --hero-bg: radial-gradient(ellipse 65% 75% at 64% 42%, #fffaf0 0%, #f8ebc9 55%, #eed6a0 100%);
+  --arch-from: #6b7a35;
+  --arch-to: #2a3115;
+  --tint-bg: linear-gradient(180deg, #faf0d6 0%, #f1dfb2 100%);
+  --band-bg: linear-gradient(110deg, #ecd394 0%, #dcb560 52%, #ecd394 100%);
+  --band-fg: #22200f;
+  --band-glow: rgba(255, 255, 255, 0.35);
+  --band-num: linear-gradient(180deg, #6b7a35 0%, #2a3115 100%);
+  --production-bg: linear-gradient(180deg, #fdf8ec 0%, #f5e7c6 100%);
+  --card-bg: linear-gradient(160deg, #fbf0d4 0%, #efd9a2 100%);
+}
+
+/* Alternative palette: Fresh Sage — refined light green */
+html[data-theme="sage"] {
+  --color-ink: #102119;
+  --color-cream: #f7faf6;
+  --color-sand: #e8f0e6;
+  --color-mint-50: #f8fbf7;
+  --color-mint-100: #e9f2e7;
+  --color-mint-200: #d3e5d0;
+  --color-mint-300: #b6d3b3;
+  --color-forest-50: #f1f6f2;
+  --color-forest-100: #dfece3;
+  --color-forest-200: #bfd9c8;
+  --color-forest-300: #95bfa5;
+  --color-forest-400: #66a07f;
+  --color-forest-500: #3f8462;
+  --color-forest-600: #2c6b4d;
+  --color-forest-700: #22573f;
+  --color-forest-800: #1b4633;
+  --color-forest-900: #153828;
+  --color-forest-950: #0c2419;
+  --color-gold: #b8964a;
+  --color-gold-light: #dcc489;
+  --color-gold-dark: #8a6d2a;
+  --hero-bg: linear-gradient(160deg, #fbfdf9 0%, #eef5ec 50%, #d6e8d6 100%);
+  --arch-from: #3f8462;
+  --arch-to: #153828;
+  --tint-bg: linear-gradient(180deg, #f1f7f0 0%, #e0ede0 100%);
+  --band-bg: linear-gradient(110deg, #e2f0e3 0%, #c8e0cb 52%, #e2f0e3 100%);
+  --band-fg: #102119;
+  --band-glow: rgba(255, 255, 255, 0.5);
+  --band-num: linear-gradient(180deg, #d1ae5a 0%, #8a6d2a 100%);
+  --production-bg: linear-gradient(180deg, #f7fbf6 0%, #e4eee2 100%);
+  --card-bg: linear-gradient(160deg, #eaf3e8 0%, #cfe3cd 100%);
+}
+
+/* Royal Maroon — heritage maroon, cream and gold (India Gate–style mood) */
+html[data-theme="maroon"] {
+  --color-ink: #2a1214;
+  --color-cream: #fbf5ea;
+  --color-sand: #f3e6cf;
+  --color-mint-50: #fdf8ef;
+  --color-mint-100: #f7ead2;
+  --color-mint-200: #efd8b0;
+  --color-mint-300: #e4c286;
+  --color-forest-50: #fbf1f0;
+  --color-forest-100: #f4dcda;
+  --color-forest-200: #e8b9b5;
+  --color-forest-300: #d48e88;
+  --color-forest-400: #b8615c;
+  --color-forest-500: #96403e;
+  --color-forest-600: #7a2e2f;
+  --color-forest-700: #632326;
+  --color-forest-800: #521c20;
+  --color-forest-900: #43171b;
+  --color-forest-950: #2b0d10;
+  --color-gold: #c79a45;
+  --color-gold-light: #e6c682;
+  --color-gold-dark: #946b1f;
+  --hero-bg: radial-gradient(ellipse 65% 75% at 64% 42%, #fffaf1 0%, #f8ecd6 55%, #efdcb9 100%);
+  --arch-from: #7a2e2f;
+  --arch-to: #2b0d10;
+  --tint-bg: linear-gradient(180deg, #f8eedb 0%, #efdcbc 100%);
+  --band-bg: linear-gradient(110deg, #2b0d10 0%, #632326 52%, #2b0d10 100%);
+  --band-fg: #fbf5ea;
+  --band-glow: rgba(230, 198, 130, 0.18);
+  --band-num: linear-gradient(180deg, #f5e2ad 0%, #c79a45 100%);
+  --production-bg: linear-gradient(180deg, #fcf7ee 0%, #f3e5cc 100%);
+  --card-bg: linear-gradient(160deg, #f7e9d2 0%, #ebd3ab 100%);
+}
+
+/* Midnight Navy — deep navy, warm white and gold (Tilda-style mood) */
+html[data-theme="navy"] {
+  --color-ink: #12162b;
+  --color-cream: #f9f7f2;
+  --color-sand: #ece8de;
+  --color-mint-50: #fbfaf6;
+  --color-mint-100: #f0ede4;
+  --color-mint-200: #e2dccd;
+  --color-mint-300: #d2c7ac;
+  --color-forest-50: #f0f2f9;
+  --color-forest-100: #dde1f0;
+  --color-forest-200: #bcc3e0;
+  --color-forest-300: #919cc8;
+  --color-forest-400: #6672ab;
+  --color-forest-500: #48538f;
+  --color-forest-600: #373f77;
+  --color-forest-700: #2d3463;
+  --color-forest-800: #252b53;
+  --color-forest-900: #1d2245;
+  --color-forest-950: #11152e;
+  --color-gold: #c6a052;
+  --color-gold-light: #e5cb8c;
+  --color-gold-dark: #93732a;
+  --hero-bg: radial-gradient(ellipse 65% 75% at 64% 42%, #ffffff 0%, #f3f1ea 55%, #e3dfd2 100%);
+  --arch-from: #2d3463;
+  --arch-to: #11152e;
+  --tint-bg: linear-gradient(180deg, #f3f2ed 0%, #e5e2d7 100%);
+  --band-bg: linear-gradient(110deg, #11152e 0%, #2d3463 52%, #11152e 100%);
+  --band-fg: #f9f7f2;
+  --band-glow: rgba(229, 203, 140, 0.16);
+  --band-num: linear-gradient(180deg, #f3e1b0 0%, #c6a052 100%);
+  --production-bg: linear-gradient(180deg, #fbfaf6 0%, #ebe8df 100%);
+  --card-bg: linear-gradient(160deg, #eceef6 0%, #d4d9ea 100%);
+}
+
+/* Ivory Luxe — white, ivory, gold and charcoal (Daawat-style mood) */
+html[data-theme="luxe"] {
+  --color-ink: #1a1713;
+  --color-cream: #fdfbf6;
+  --color-sand: #f5efe2;
+  --color-mint-50: #fffdf8;
+  --color-mint-100: #f8f1e1;
+  --color-mint-200: #f0e3c4;
+  --color-mint-300: #e6d19f;
+  --color-forest-50: #f6f5f2;
+  --color-forest-100: #e9e6df;
+  --color-forest-200: #d2ccc0;
+  --color-forest-300: #b1a896;
+  --color-forest-400: #8d8370;
+  --color-forest-500: #6e6553;
+  --color-forest-600: #554e40;
+  --color-forest-700: #433d33;
+  --color-forest-800: #35302a;
+  --color-forest-900: #29251f;
+  --color-forest-950: #1a1713;
+  --color-gold: #b8913f;
+  --color-gold-light: #dcc082;
+  --color-gold-dark: #8a6a22;
+  --hero-bg: radial-gradient(ellipse 65% 75% at 64% 42%, #ffffff 0%, #fbf8f0 55%, #f0e7d3 100%);
+  --arch-from: #e2c47e;
+  --arch-to: #8a6a22;
+  --tint-bg: linear-gradient(180deg, #fbf7ee 0%, #f2e9d6 100%);
+  --band-bg: linear-gradient(110deg, #1a1713 0%, #35302a 52%, #1a1713 100%);
+  --band-fg: #fdfbf6;
+  --band-glow: rgba(220, 192, 130, 0.16);
+  --band-num: linear-gradient(180deg, #f1dca5 0%, #b8913f 100%);
+  --production-bg: linear-gradient(180deg, #fffdf9 0%, #f5eee0 100%);
+  --card-bg: linear-gradient(160deg, #f8f1e1 0%, #eadcbd 100%);
+}
+
+/* Sunlit Harvest — mustard yellow, deep green and warm orange (Lundberg / Ben's-style mood) */
+html[data-theme="sunlit"] {
+  --color-ink: #102016;
+  --color-cream: #fffbea;
+  --color-sand: #fbefc0;
+  --color-mint-50: #fffcef;
+  --color-mint-100: #fdf2c9;
+  --color-mint-200: #fae59a;
+  --color-mint-300: #f6d466;
+  --color-gold: #e07b2c;
+  --color-gold-light: #f3a85f;
+  --color-gold-dark: #b5561a;
+  --hero-bg: linear-gradient(160deg, #fff8dc 0%, #fbe597 55%, #f5cf55 100%);
+  --arch-from: #1f6440;
+  --arch-to: #072516;
+  --tint-bg: linear-gradient(180deg, #fff8dc 0%, #fbeaa8 100%);
+  --band-bg: linear-gradient(110deg, #072516 0%, #165233 52%, #072516 100%);
+  --band-fg: #fffbea;
+  --band-glow: rgba(245, 207, 85, 0.2);
+  --band-num: linear-gradient(180deg, #ffe08a 0%, #f3b437 100%);
+  --production-bg: linear-gradient(180deg, #fffbea 0%, #fbf0c4 100%);
+  --card-bg: linear-gradient(160deg, #fdf0bf 0%, #f6db7a 100%);
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    -webkit-tap-highlight-color: transparent;
+  }
+  body {
+    @apply bg-cream font-sans text-ink antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  section[id] {
+    scroll-margin-top: 72px;
+  }
+  ::selection {
+    @apply bg-gold-light text-forest-950;
+  }
+}
+
+/* Bangla typography: taller lines for matras, no wide letter-spacing,
+   readable small labels. */
+html:lang(bn) :is(h1, h2, h3, h4) {
+  line-height: 1.28;
+}
+html:lang(bn) .hero-title {
+  font-size: clamp(2.7rem, 4.6vw, 4.3rem);
+  line-height: 1.22;
+}
+html:lang(bn) .font-light {
+  font-weight: 400;
+}
+/* Galada is a single-weight script — keep it upright and unsynthesised */
+html:lang(bn) .font-display {
+  font-synthesis: none;
+}
+html:lang(bn) [class*="tracking-"] {
+  letter-spacing: 0.01em;
+}
+html:lang(bn) [class*="uppercase"] {
+  font-size: 0.8rem;
+}
+
+@layer utilities {
+  .bg-hero { background: var(--hero-bg); }
+  .bg-tint { background: var(--tint-bg); }
+  .bg-band { background: var(--band-bg); color: var(--band-fg); }
+  .bg-production { background: var(--production-bg); }
+  .bg-card-tint { background: var(--card-bg); }
+  .bg-arch { background: linear-gradient(180deg, var(--arch-from) 0%, var(--arch-to) 100%); }
+  .text-band-num {
+    background: var(--band-num);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .text-gradient-gold-deep {
+    background: linear-gradient(180deg, #d4ad55 0%, #8a6a25 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .dot-pattern {
+    background-image: radial-gradient(currentColor 1px, transparent 1px);
+    background-size: 18px 18px;
+  }
+  .no-scrollbar {
+    scrollbar-width: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  /* film-grain overlay for a cinematic finish */
+  .grain::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.08;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    mix-blend-mode: overlay;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .animate-spin-slow { animation: none; }
+}
