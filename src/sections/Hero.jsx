@@ -45,6 +45,12 @@ export default function Hero({ activeId, autoplay, onAutoAdvance, onChoose, onIn
   return (
     <section id="home" className="bg-hero relative isolate overflow-hidden text-forest-950">
       {/* soft light + leaf-green glows */}
+      {/* soft paddy field rising from the bottom of the hero */}
+      <img
+        src={images.greenField}
+        alt=""
+        className="pointer-events-none absolute inset-x-0 bottom-0 -z-10 h-[46%] w-full object-cover object-bottom opacity-[0.42] mix-blend-multiply [mask-image:linear-gradient(to_top,#000_15%,transparent_100%)]"
+      />
       <div className="absolute -left-40 top-10 -z-10 h-[34rem] w-[34rem] rounded-full bg-mint-300/40 blur-3xl" />
       <div className="absolute -right-32 bottom-0 -z-10 h-[30rem] w-[30rem] rounded-full bg-gold-light/25 blur-3xl" />
       <div className="dot-pattern absolute inset-0 -z-10 text-forest-700 opacity-[0.06]" />

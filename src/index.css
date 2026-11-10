@@ -2,10 +2,10 @@
 
 /* ------------------------------------------------------------------
    Brand theme — change colors & fonts here and the whole site updates.
-   Default palette "Emerald & Ivory" is taken from the Zinia™ packaging:
-   deep emerald green, warm ivory and rich gold.
-   Two alternative palettes follow below (data-theme="harvest" / "sage");
-   preview them with ?theme=harvest or ?theme=sage in the address bar.
+   Default palette "Paddy Green": fresh paddy-field greens for the page,
+   deep emerald and gold from the Zinia™ packaging for accents.
+   Alternative palettes follow below (data-theme="ivory", "harvest", "sage",
+   "maroon", "navy", "luxe", "sunlit"); preview with ?theme=<name>.
    Bangla text falls back to Galada (stylish headings) and
    Anek Bangla (body), since Fraunces / DM Sans have no Bangla letters.
    ------------------------------------------------------------------ */
@@ -13,15 +13,15 @@
   --font-display: "Fraunces", "Galada", ui-serif, Georgia, serif;
   --font-sans: "DM Sans", "Anek Bangla", ui-sans-serif, system-ui, sans-serif;
 
-  --color-ink: #0f1f16;
-  --color-cream: #faf6ec;
-  --color-sand: #f1e8d4;
+  --color-ink: #0e2416;
+  --color-cream: #f6faf0;
+  --color-sand: #e5efd9;
 
   /* soft warm tints used for glows */
-  --color-mint-50: #fdfaf1;
-  --color-mint-100: #f6eedb;
-  --color-mint-200: #eddfbd;
-  --color-mint-300: #e4cf9c;
+  --color-mint-50: #f4f9ee;
+  --color-mint-100: #e3f0d5;
+  --color-mint-200: #cbe3b4;
+  --color-mint-300: #a9d08a;
 
   /* emerald green scale (from the packaging) */
   --color-forest-50: #eef6f0;
@@ -47,14 +47,33 @@
 
 /* Section backgrounds per palette (default: Emerald & Ivory) */
 :root {
+  --hero-bg: radial-gradient(ellipse 60% 70% at 62% 40%, #ffffff 0%, #eef7e4 42%, #d5eac0 78%, #c3e0a8 100%);
+  --arch-from: #2f7a52;
+  --arch-to: #072516;
+  --tint-bg: linear-gradient(180deg, #f1f8ea 0%, #dcedc9 100%);
+  --band-bg: linear-gradient(110deg, #0b3520 0%, #1f6440 50%, #0b3520 100%);
+  --band-fg: #f6faf0;
+  --band-glow: rgba(169, 208, 138, 0.22);
+  --band-num: linear-gradient(180deg, #f5e2ad 0%, #c39a3e 100%);
+  --production-bg: linear-gradient(180deg, #f5faef 0%, #ddedcc 100%);
+  --card-bg: linear-gradient(160deg, #e6f2d9 0%, #c3dfa9 100%);
+}
+
+/* Emerald & Ivory — the previous default: cream page, emerald and gold */
+html[data-theme="ivory"] {
+  --color-ink: #0f1f16;
+  --color-cream: #faf6ec;
+  --color-sand: #f1e8d4;
+  --color-mint-50: #fdfaf1;
+  --color-mint-100: #f6eedb;
+  --color-mint-200: #eddfbd;
+  --color-mint-300: #e4cf9c;
   --hero-bg: radial-gradient(ellipse 65% 75% at 64% 42%, #fffdf7 0%, #f8f1e1 52%, #ede0c2 100%);
   --arch-from: #1f6440;
-  --arch-to: #072516;
   --tint-bg: linear-gradient(180deg, #f7f0df 0%, #ece0c3 100%);
   --band-bg: linear-gradient(110deg, #072516 0%, #165233 52%, #072516 100%);
   --band-fg: #faf6ec;
   --band-glow: rgba(227, 197, 127, 0.16);
-  --band-num: linear-gradient(180deg, #f5e2ad 0%, #c39a3e 100%);
   --production-bg: linear-gradient(180deg, #fcf9f1 0%, #f1e7d1 100%);
   --card-bg: linear-gradient(160deg, #f8f0dc 0%, #e8d9b5 100%);
 }
