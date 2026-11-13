@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { ArrowLeft, Loader2, ShieldCheck, Trash2 } from 'lucide-react';
+import { ArrowLeft, Banknote, Check, Loader2, ReceiptText, ShoppingBag, Trash2, Wheat } from 'lucide-react';
 import { useLang } from '../i18n/LanguageContext';
 import { useShop } from '../store/shop';
 import { api } from '../lib/api';
@@ -12,7 +12,7 @@ import QtyStepper from '../components/shop/QtyStepper';
 import { OrderTypeToggle } from '../sections/Shop';
 
 const inputCls =
-  'w-full rounded-2xl border bg-white px-4 py-3 text-[0.95rem] text-ink outline-none transition placeholder:text-ink/35 focus:border-gold focus:ring-4 focus:ring-gold-light/40';
+  'w-full rounded-2xl border bg-mint-50/60 px-4 py-3 text-[0.95rem] text-ink outline-none transition placeholder:text-ink/35 focus:border-gold focus:bg-white focus:ring-4 focus:ring-gold-light/40';
 
 function Field({ id, label, error, required, children }) {
   return (
@@ -27,6 +27,53 @@ function Field({ id, label, error, required, children }) {
         </p>
       )}
     </div>
+  );
+}
+
+/** Card with a numbered heading. */
+function Step({ n, title, children }) {
+  return (
+    <section className="rounded-[1.75rem] bg-white p-6 shadow-[0_30px_60px_-45px_rgba(11,53,32,0.55)] ring-1 ring-forest-900/[0.06] sm:p-8">
+      <h2 className="flex items-center gap-3 font-display text-2xl text-forest-950">
+        <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-forest-900 font-sans text-sm font-bold text-gold-light">{n}</span>
+        {title}
+      </h2>
+      <div className="mt-5">{children}</div>
+    </section>
+  );
+}
+
+/** Products ✓ — Your details — Receipt */
+function Progress() {
+  const { t, num } = useLang();
+  const steps = [t('checkout.stepProducts'), t('checkout.stepDetails'), t('checkout.stepReceipt')];
+  return (
+    <ol className="flex items-center gap-2 sm:gap-3" aria-label="Progress">
+      {steps.map((label, i) => {
+        const done = i === 0;
+        const current = i === 1;
+        return (
+          <li key={label} className="flex items-center gap-2 sm:gap-3">
+            <span
+              aria-current={current ? 'step' : undefined}
+              className={`flex items-center gap-2 rounded-full py-1.5 pl-1.5 pr-3.5 text-sm font-semibold ${
+                current ? 'bg-forest-900 text-cream' : done ? 'bg-white text-forest-900 ring-1 ring-forest-900/10' : 'text-ink/40'
+              }`}
+            >
+              <span
+                className={`grid h-6 w-6 place-items-center rounded-full text-xs font-bold ${
+                  done ? 'bg-gold text-forest-950' : current ? 'bg-gold text-forest-950' : 'bg-forest-900/[0.07] text-ink/45'
+                }`}
+              >
+                {done ? <Check className="h-3.5 w-3.5" strokeWidth={3} /> : num(i + 1)}
+              </span>
+              <span className={current ? '' : 'hidden sm:inline'}>{label}</span>
+            </span>
+            {i < steps.length - 1 && <span className="h-px w-5 bg-forest-900/15 sm:w-10" />}
+          </li>
+        );
+      })}
+    </ol>
   );
 }
 
@@ -124,12 +171,21 @@ export default function Checkout() {
 
   if (catalog.status === 'ready' && lines.length === 0) {
     return (
-      <Container className="flex min-h-[70svh] flex-col items-center justify-center pt-28 text-center">
-        <p className="font-display text-3xl text-forest-950">{t('checkout.emptyCart')}</p>
-        <button type="button" onClick={() => goToSection('order')} className="mt-6 rounded-full bg-forest-800 px-6 py-3 font-semibold text-cream">
-          {t('checkout.shopNow')}
-        </button>
-      </Container>
+      <div className="bg-production">
+        <Container className="flex min-h-[80svh] flex-col items-center justify-center pb-16 pt-28 text-center">
+          <span className="grid h-20 w-20 place-items-center rounded-full bg-white text-gold-dark shadow-[0_24px_50px_-30px_rgba(11,53,32,0.6)] ring-1 ring-gold/40">
+            <ShoppingBag className="h-8 w-8" strokeWidth={1.5} />
+          </span>
+          <p className="mt-6 font-display text-3xl text-forest-950">{t('checkout.emptyCart')}</p>
+          <button
+            type="button"
+            onClick={() => goToSection('order')}
+            className="mt-6 inline-flex items-center gap-2 rounded-full bg-forest-800 px-7 py-3.5 font-semibold text-cream shadow-[0_16px_34px_-18px_rgba(11,53,32,0.9)] transition hover:bg-forest-700"
+          >
+            {t('checkout.shopNow')}
+          </button>
+        </Container>
+      </div>
     );
   }
 
@@ -140,21 +196,20 @@ export default function Checkout() {
           <ArrowLeft className="h-4 w-4" />
           {t('checkout.back')}
         </button>
-        <h1 className="mt-4 font-display text-4xl text-forest-950 sm:text-5xl">{t('checkout.title')}</h1>
+        <div className="mt-4 flex flex-wrap items-end justify-between gap-5">
+          <h1 className="font-display text-4xl text-forest-950 sm:text-5xl">{t('checkout.title')}</h1>
+          <Progress />
+        </div>
 
         <form onSubmit={submit} noValidate className="mt-10 grid gap-8 lg:grid-cols-12">
           {/* customer details */}
           <div className="space-y-6 lg:col-span-7">
-            <section className="rounded-[1.75rem] bg-white/85 p-6 shadow-[0_24px_50px_-40px_rgba(11,53,32,0.5)] ring-1 ring-forest-900/[0.06] sm:p-8">
-              <h2 className="font-display text-2xl text-forest-950">{t('checkout.orderType')}</h2>
-              <div className="mt-4">
-                <OrderTypeToggle compact />
-              </div>
-            </section>
+            <Step n={num(1)} title={t('checkout.orderType')}>
+              <OrderTypeToggle compact />
+            </Step>
 
-            <section className="rounded-[1.75rem] bg-white/85 p-6 shadow-[0_24px_50px_-40px_rgba(11,53,32,0.5)] ring-1 ring-forest-900/[0.06] sm:p-8">
-              <h2 className="font-display text-2xl text-forest-950">{t('checkout.yourDetails')}</h2>
-              <div className="mt-5 grid gap-5 sm:grid-cols-2">
+            <Step n={num(2)} title={t('checkout.yourDetails')}>
+              <div className="grid gap-5 sm:grid-cols-2">
                 <Field id="name" label={t('checkout.name')} required error={errors.name}>
                   <input id="name" autoComplete="name" className={`${inputCls} ${err('name')}`} placeholder={t('checkout.namePh')} value={form.name} onChange={set('name')} aria-invalid={!!errors.name} />
                 </Field>
@@ -185,24 +240,34 @@ export default function Checkout() {
                   </Field>
                 </div>
               </div>
-            </section>
+            </Step>
           </div>
 
           {/* summary */}
           <aside className="lg:col-span-5">
-            <div className="sticky top-28 rounded-[1.75rem] bg-forest-950 p-6 text-cream shadow-[0_40px_70px_-40px_rgba(0,0,0,0.6)] sm:p-8">
-              <h2 className="font-display text-2xl">{t('checkout.summary')}</h2>
-              <p className="mt-1 text-sm text-cream/60">
-                {t(`orderType.${orderType}`)} · {num(totalBags)} {t('shop.bags')}
-              </p>
+            <div className="sticky top-28 overflow-hidden rounded-[1.75rem] bg-forest-950 text-cream shadow-[0_40px_70px_-40px_rgba(0,0,0,0.6)]">
+              <div className="relative flex items-center gap-3 border-b border-gold/25 bg-gradient-to-br from-forest-800 to-forest-950 px-6 py-5 sm:px-8">
+                <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full border border-gold/60 text-gold-light">
+                  <Wheat className="h-5 w-5" strokeWidth={1.5} />
+                </span>
+                <div>
+                  <h2 className="font-display text-2xl leading-tight">{t('checkout.summary')}</h2>
+                  <p className="text-sm text-cream/60">
+                    <span lang="en" className="font-['Fraunces'] italic text-gold-light">Zinia™</span> · {t(`orderType.${orderType}`)} · {num(totalBags)} {t('shop.bags')}
+                  </p>
+                </div>
+              </div>
+              <div className="p-6 sm:p-8 sm:pt-6">
 
-              <ul className="mt-5 divide-y divide-white/10 border-y border-white/10">
+              <ul className="divide-y divide-white/10 border-b border-white/10">
                 {lines.map((l) => {
                   const ql = quote?.lines.find((x) => x.product_id === l.product.id);
                   const unit = ql?.unit_price ?? l.unit_price;
                   return (
                     <li key={l.product.id} className="flex gap-4 py-4">
-                      <img src={l.product.image} alt="" className="h-16 w-14 shrink-0 object-contain" />
+                      <span className="grid h-[4.5rem] w-16 shrink-0 place-items-center rounded-xl bg-white/[0.07] ring-1 ring-white/10">
+                        <img src={l.product.image} alt="" className="h-16 w-14 object-contain" />
+                      </span>
                       <div className="min-w-0 flex-1">
                         <p className="font-semibold leading-snug">{lang === 'en' ? l.product.name_en : l.product.name_bn}</p>
                         <p className="text-xs text-cream/55">
@@ -257,12 +322,16 @@ export default function Checkout() {
                 </div>
               </dl>
 
-              <p className="mt-5 flex items-start gap-2 rounded-xl bg-white/5 px-4 py-3 text-xs leading-relaxed text-cream/70">
-                <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-gold-light" />
-                <span>
-                  <strong className="text-cream">{t('checkout.payment')}:</strong> {t('shop.cod')}. {t('checkout.agree')}
-                </span>
-              </p>
+              <ul className="mt-5 space-y-2.5 rounded-2xl bg-white/[0.05] px-4 py-4 text-xs leading-relaxed text-cream/70 ring-1 ring-white/[0.06]">
+                <li className="flex items-start gap-2.5">
+                  <Banknote className="mt-0.5 h-4 w-4 shrink-0 text-gold-light" />
+                  <span><strong className="text-cream">{t('checkout.payment')}:</strong> {t('shop.cod')}</span>
+                </li>
+                <li className="flex items-start gap-2.5">
+                  <ReceiptText className="mt-0.5 h-4 w-4 shrink-0 text-gold-light" />
+                  <span>{t('checkout.instantReceipt')}. {t('checkout.agree')}</span>
+                </li>
+              </ul>
 
               {submitError && (
                 <p role="alert" className="mt-4 rounded-xl bg-rose-500/15 px-4 py-3 text-sm text-rose-200">
@@ -273,11 +342,12 @@ export default function Checkout() {
               <button
                 type="submit"
                 disabled={submitting || !meetsMinimum || !lines.length || !!quoteError}
-                className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-full bg-gold px-6 py-4 text-base font-bold text-forest-950 transition hover:bg-gold-light disabled:cursor-not-allowed disabled:opacity-50"
+                className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-full bg-gold px-6 py-4 text-base font-bold text-forest-950 shadow-[0_18px_40px_-18px_rgba(201,161,74,0.9)] transition hover:bg-gold-light disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {submitting && <Loader2 className="h-5 w-5 animate-spin" />}
                 {submitting ? t('checkout.placing') : t('checkout.confirm')}
               </button>
+              </div>
             </div>
           </aside>
         </form>

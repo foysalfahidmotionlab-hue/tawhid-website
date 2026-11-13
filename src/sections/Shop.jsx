@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { Check, PackageOpen, ShoppingBag, Store, Truck } from 'lucide-react';
+import { ArrowRight, Banknote, Check, MapPin, PackageOpen, ReceiptText, ShoppingBag, Store, Truck, Wheat } from 'lucide-react';
 import { useLang } from '../i18n/LanguageContext';
 import { useShop } from '../store/shop';
 import { taka, formatKg } from '../lib/format';
@@ -53,27 +53,9 @@ function ProductCard({ p, index }) {
   const qty = quantities[String(p.id)] || 0;
   const name = lang === 'en' ? p.name_en : p.name_bn;
   const desc = lang === 'en' ? p.description_en : p.description_bn;
-  const price = orderType === 'wholesale' ? p.wholesale_price : p.retail_price;
-
-  const priceRow = (type, value) => {
-    const on = orderType === type;
-    return (
-      <div
-        className={`flex items-center justify-between rounded-xl border px-4 py-2.5 transition-colors ${
-          on ? 'border-gold bg-gold/10' : 'border-forest-900/10 bg-white/50'
-        }`}
-      >
-        <span className={`text-sm ${on ? 'font-semibold text-forest-950' : 'text-ink/55'}`}>
-          {type === 'wholesale' ? t('shop.wholesalePrice') : t('shop.retailPrice')}
-          {on && <span className="ml-2 rounded-full bg-gold px-2 py-0.5 text-[0.65rem] font-bold text-forest-950">{t('shop.yourPrice')}</span>}
-        </span>
-        <span className={`font-semibold ${on ? 'text-lg text-forest-950' : 'text-ink/50'}`}>
-          {taka(value, lang)}
-          <span className="ml-1 text-xs font-normal text-ink/45">/ {t('shop.bag')}</span>
-        </span>
-      </div>
-    );
-  };
+  const wholesale = orderType === 'wholesale';
+  const price = wholesale ? p.wholesale_price : p.retail_price;
+  const otherPrice = wholesale ? p.retail_price : p.wholesale_price;
 
   return (
     <motion.article
@@ -81,57 +63,130 @@ function ProductCard({ p, index }) {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: '-60px' }}
       transition={{ duration: 0.8, delay: index * 0.1, ease }}
-      className="grid overflow-hidden rounded-[2rem] bg-white/80 shadow-[0_30px_60px_-40px_rgba(11,53,32,0.55)] ring-1 ring-forest-900/[0.07] backdrop-blur sm:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]"
+      className="group relative flex flex-col overflow-hidden rounded-[2rem] bg-white shadow-[0_40px_80px_-50px_rgba(11,53,32,0.6)] ring-1 ring-forest-900/[0.06] sm:flex-row lg:flex-col xl:flex-row"
     >
-      <div className="bg-card-tint relative flex min-h-[17rem] items-center justify-center p-5">
-        <span className="absolute left-4 top-4 rounded-full bg-forest-900 px-3 py-1 text-xs font-semibold text-cream">
+      {/* pack on a soft stage */}
+      <div className="bg-card-tint relative flex min-h-[19rem] items-end justify-center overflow-hidden px-6 pb-6 pt-14 sm:w-[44%] sm:shrink-0 lg:w-auto xl:w-[44%]">
+        <span aria-hidden="true" lang="en" className="text-brand-watermark pointer-events-none absolute -left-2 top-12 select-none font-['Fraunces'] text-[5.5rem] font-semibold italic leading-none tracking-[-0.04em]">
+          Zinia
+        </span>
+        <span className="absolute left-4 top-4 inline-flex items-center gap-1.5 rounded-full bg-white/80 px-3 py-1 text-xs font-semibold text-forest-900 ring-1 ring-forest-900/10 backdrop-blur">
+          <Wheat className="h-3.5 w-3.5 text-gold-dark" />
           {formatKg(p.weight_kg, lang)}
         </span>
-        <img src={p.image} alt={name} loading="lazy" className="h-60 w-auto max-w-full object-contain drop-shadow-[0_24px_30px_rgba(11,53,32,0.3)]" />
+        <div className="absolute bottom-[12%] left-1/2 h-[58%] w-[78%] -translate-x-1/2 rounded-full bg-white/55 blur-2xl" />
+        <div className="absolute bottom-5 left-1/2 h-5 w-[60%] -translate-x-1/2 rounded-[50%] bg-forest-950/20 blur-lg" />
+        <img
+          src={p.image}
+          alt={name}
+          loading="lazy"
+          className="relative h-56 w-auto max-w-full object-contain drop-shadow-[0_24px_30px_rgba(11,53,32,0.3)] transition-transform duration-700 group-hover:-translate-y-1.5 group-hover:scale-[1.03] sm:h-60"
+        />
       </div>
 
-      <div className="flex flex-col p-6 sm:p-7">
-        <h3 className="font-display text-[1.85rem] font-normal leading-tight text-forest-950">{name}</h3>
-        <p className="mt-2 text-sm leading-relaxed text-ink/60">{desc}</p>
+      <div className="flex flex-1 flex-col p-6 sm:p-7">
+        <p className="text-[0.7rem] font-semibold uppercase tracking-[0.22em] text-gold-dark">{t('shop.brandLine')}</p>
+        <h3 className="mt-2 font-display text-[1.75rem] font-normal leading-tight text-forest-950">{name}</h3>
+        <p className="mt-2 line-clamp-3 text-sm leading-relaxed text-ink/60">{desc}</p>
 
-        <div className="mt-5 space-y-2">
-          {priceRow('wholesale', p.wholesale_price)}
-          {priceRow('retail', p.retail_price)}
+        {/* active price, the other one quietly underneath */}
+        <div className="mt-5 rounded-2xl bg-mint-50 px-4 py-3.5 ring-1 ring-forest-900/[0.06]">
+          <p className="flex items-center gap-2 text-xs font-semibold text-forest-800">
+            <span className="rounded-full bg-gold px-2 py-0.5 text-[0.65rem] font-bold text-forest-950">{t('shop.yourPrice')}</span>
+            {wholesale ? t('shop.wholesalePrice') : t('shop.retailPrice')}
+          </p>
+          <p className="mt-1 flex items-baseline gap-1.5">
+            <span className="font-display text-[2rem] leading-none text-forest-950">{taka(price, lang)}</span>
+            <span className="text-sm text-ink/50">/ {t('shop.bag')}</span>
+          </p>
+          <p className="mt-1.5 text-xs text-ink/50">
+            {wholesale ? t('shop.retailPrice') : t('shop.wholesalePrice')} {taka(otherPrice, lang)}
+            {!wholesale && <> · {t('shop.fromBags', { n: num(WHOLESALE_MIN_BAGS) })}</>}
+          </p>
         </div>
 
         {!p.available ? (
-          <p className="mt-6 rounded-xl bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-700">{t('shop.outOfStock')}</p>
+          <p className="mt-5 rounded-xl bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-700">{t('shop.outOfStock')}</p>
         ) : (
-          <div className="mt-6 flex flex-wrap items-center justify-between gap-4">
-            <div>
-              <QtyStepper value={qty} onChange={(n) => setQty(p.id, n)} max={p.stock_qty ?? undefined} label={`${name} — ${t('shop.quantity')}`} />
-              {p.stock_qty != null && p.stock_qty <= 50 && (
-                <p className="mt-1.5 text-xs text-gold-dark">{t('shop.onlyLeft').replace('{n}', num(p.stock_qty))}</p>
-              )}
+          <>
+            <div className="mt-5 flex flex-wrap items-end justify-between gap-3">
+              <div>
+                <QtyStepper value={qty} onChange={(n) => setQty(p.id, n)} max={p.stock_qty ?? undefined} label={`${name} — ${t('shop.quantity')}`} />
+                {p.stock_qty != null && p.stock_qty <= 50 && (
+                  <p className="mt-1.5 text-xs text-gold-dark">{t('shop.onlyLeft').replace('{n}', num(p.stock_qty))}</p>
+                )}
+              </div>
+              <div className="text-right">
+                <p className="text-xs text-ink/45">{t('shop.lineTotal')}</p>
+                <p className="font-display text-2xl leading-tight text-forest-950">{taka(qty * price, lang)}</p>
+              </div>
             </div>
-            <div className="text-right">
-              <p className="text-xs text-ink/50">
-                {num(qty)} {t('shop.bags')} × {taka(price, lang)}
-              </p>
-              <p className="font-display text-2xl text-forest-950">{taka(qty * price, lang)}</p>
-            </div>
-          </div>
-        )}
-
-        {p.available && (
-          <button
-            type="button"
-            onClick={() => {
-              if (qty === 0) setQty(p.id, orderType === 'wholesale' ? WHOLESALE_MIN_BAGS : 1);
-              navigate('/checkout');
-            }}
-            className="mt-5 inline-flex items-center justify-center gap-2 rounded-full bg-forest-800 px-6 py-3.5 font-semibold text-cream transition hover:bg-forest-700"
-          >
-            {t('shop.orderNow')}
-          </button>
+            <button
+              type="button"
+              onClick={() => {
+                if (qty === 0) setQty(p.id, wholesale ? WHOLESALE_MIN_BAGS : 1);
+                navigate('/checkout');
+              }}
+              className="group/btn mt-5 inline-flex items-center justify-between gap-3 rounded-full bg-forest-800 py-2 pl-6 pr-2 font-semibold text-cream shadow-[0_16px_34px_-18px_rgba(11,53,32,0.9)] transition hover:bg-forest-700"
+            >
+              {t('shop.orderNow')}
+              <span className="grid h-9 w-9 place-items-center rounded-full bg-gold text-forest-950">
+                <ArrowRight className="h-4 w-4 transition-transform group-hover/btn:translate-x-0.5" />
+              </span>
+            </button>
+          </>
         )}
       </div>
     </motion.article>
+  );
+}
+
+/** ১ → ২ → ৩: how ordering works. */
+function ProcessSteps() {
+  const { t, num } = useLang();
+  const icons = [ShoppingBag, MapPin, ReceiptText];
+  return (
+    <ol className="mt-12 grid gap-px overflow-hidden rounded-[1.75rem] bg-forest-900/[0.08] ring-1 ring-forest-900/[0.06] sm:grid-cols-3">
+      {t('shop.steps').map(([title, text], i) => {
+        const Icon = icons[i];
+        return (
+          <li key={title} className="flex items-start gap-4 bg-white/75 p-5 backdrop-blur sm:p-6">
+            <span className="relative grid h-11 w-11 shrink-0 place-items-center rounded-full bg-forest-900 text-gold-light">
+              <Icon className="h-5 w-5" strokeWidth={1.6} />
+              <span className="absolute -right-1 -top-1 grid h-5 w-5 place-items-center rounded-full bg-gold text-[0.65rem] font-bold text-forest-950">
+                {num(i + 1)}
+              </span>
+            </span>
+            <span>
+              <span className="block font-semibold text-forest-950">{title}</span>
+              <span className="mt-0.5 block text-sm leading-snug text-ink/55">{text}</span>
+            </span>
+          </li>
+        );
+      })}
+    </ol>
+  );
+}
+
+/** Small reassurance row under the products. */
+function TrustRow() {
+  const { t } = useLang();
+  const icons = [Banknote, Truck, ReceiptText];
+  return (
+    <ul className="mt-10 grid gap-4 sm:grid-cols-3">
+      {t('shop.trust').map(([title, text], i) => {
+        const Icon = icons[i];
+        return (
+          <li key={title} className="flex items-center gap-3 rounded-2xl border border-forest-900/[0.08] bg-white/50 px-4 py-3.5">
+            <Icon className="h-5 w-5 shrink-0 text-gold-dark" strokeWidth={1.6} />
+            <span className="leading-tight">
+              <span className="block text-sm font-semibold text-forest-950">{title}</span>
+              <span className="text-xs text-ink/50">{text}</span>
+            </span>
+          </li>
+        );
+      })}
+    </ul>
   );
 }
 
@@ -191,6 +246,8 @@ export default function Shop() {
           </Reveal>
         </div>
 
+        <ProcessSteps />
+
         {orderType === 'wholesale' && totalBags > 0 && !meetsMinimum && (
           <p role="alert" className="mt-8 rounded-2xl border border-gold/50 bg-gold/10 px-5 py-3 text-sm font-medium text-forest-900">
             {t('shop.wholesaleMin')}
@@ -206,9 +263,7 @@ export default function Shop() {
           ))}
         </div>
 
-        <p className="mt-6 text-center text-xs text-ink/45">
-          {t('shop.cod')} · {t('shop.priceNote')}
-        </p>
+        <TrustRow />
       </Container>
     </section>
   );
