@@ -57,7 +57,7 @@ export default function Orders() {
             {ORDER_STATUSES.map((s) => <option key={s} value={s}>{STATUS_LABEL[s]}</option>)}
           </select>
           <select className={inputCls} value={f.type} onChange={set('type')} aria-label="Order type">
-            <option value="">Wholesale & retail</option>
+            <option value="">All types</option>
             <option value="wholesale">Wholesale</option>
             <option value="retail">Retail</option>
           </select>

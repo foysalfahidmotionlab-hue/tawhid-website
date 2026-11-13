@@ -53,7 +53,7 @@ function Login({ onDone }) {
           </div>
         </div>
         <div className="mt-6 space-y-3">
-          <input className={inputCls} type="email" autoComplete="username" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+          <input className={inputCls} type="text" autoComplete="username" autoCapitalize="none" spellCheck={false} placeholder="Email or username" value={email} onChange={(e) => setEmail(e.target.value)} required />
           <input className={inputCls} type="password" autoComplete="current-password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} required />
           <Notice>{error}</Notice>
           <Btn type="submit" variant="primary" busy={busy} className="w-full py-2.5">Sign in</Btn>
