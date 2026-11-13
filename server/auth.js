@@ -108,3 +108,24 @@ setInterval(() => {
   for (const [k, b] of buckets) if (b.reset < now) buckets.delete(k);
   db.prepare("DELETE FROM admin_sessions WHERE expires_at < strftime('%Y-%m-%dT%H:%M:%fZ','now')").run();
 }, 10 * 60e3).unref();
+
+/**
+ * Optional first admin from environment settings (ADMIN_EMAIL + ADMIN_PASSWORD),
+ * set in the host's dashboard — never in code. Only creates the account when that
+ * email doesn't exist yet; it never changes an existing password.
+ * Used on Vercel, where there is no terminal to run `npm run admin:create`.
+ */
+export function ensureAdminFromEnv() {
+  const email = process.env.ADMIN_EMAIL?.trim().toLowerCase();
+  const password = process.env.ADMIN_PASSWORD;
+  if (!email || !password) return;
+  if (db.prepare('SELECT 1 FROM admin_users WHERE email = ?').get(email)) return;
+  const weak = validatePasswordStrength(password);
+  if (weak) {
+    console.error(`ADMIN_PASSWORD not used: ${weak}`);
+    return;
+  }
+  db.prepare('INSERT INTO admin_users (email, name, password_hash) VALUES (?, ?, ?)')
+    .run(email, process.env.ADMIN_NAME?.trim() || 'Admin', hashPassword(password));
+  console.log(`Admin account created for ${email} from environment settings.`);
+}

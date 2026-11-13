@@ -63,6 +63,19 @@ NODE_ENV=production PORT=8787 npm start
 Put it behind HTTPS (e.g. Caddy or Nginx) and set `TRUST_PROXY=1` so rate limiting sees real visitor IPs.
 See `.env.example` for all settings. **Back up the `data/` folder** regularly — it holds all orders.
 
+## Test deployment on Vercel (temporary data)
+
+Vercel can run the whole site for **checking and demos**, but it has no permanent disk:
+the database lives in `/tmp` and **orders, uploads and content edits can disappear at any time**
+(and you may be signed out when Vercel starts a fresh copy). Do not take real orders there.
+
+1. Import the GitHub repo on vercel.com (settings come from `vercel.json`).
+2. In **Settings → Environment Variables** add `ADMIN_EMAIL`, `ADMIN_PASSWORD`
+   (10+ characters, letters and numbers) and optionally `ADMIN_NAME`, then redeploy.
+3. Sign in at `https://<your-project>.vercel.app/admin`.
+
+The admin account is re-created from these settings whenever the data is reset.
+
 ## Useful commands
 
 | Command | What it does |

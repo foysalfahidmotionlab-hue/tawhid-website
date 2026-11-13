@@ -5,7 +5,8 @@ import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-export const DATA_DIR = resolve(process.env.DATA_DIR || resolve(root, 'data'));
+// On Vercel only /tmp is writable, and it is wiped from time to time (test use only).
+export const DATA_DIR = resolve(process.env.DATA_DIR || (process.env.VERCEL ? '/tmp/zinia-data' : resolve(root, 'data')));
 export const UPLOAD_DIR = resolve(DATA_DIR, 'uploads');
 mkdirSync(UPLOAD_DIR, { recursive: true });
 
