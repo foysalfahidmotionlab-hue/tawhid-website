@@ -362,3 +362,13 @@ html:lang(bn) [class*="uppercase"] {
   html { scroll-behavior: auto; }
   .animate-spin-slow { animation: none; }
 }
+
+/* Receipt printing: print only the receipt document. */
+@media print {
+  @page { size: A4; margin: 10mm; }
+  body { background: #fff !important; }
+  body * { visibility: hidden; }
+  #receipt-doc, #receipt-doc * { visibility: visible; }
+  #receipt-doc { position: absolute; left: 0; top: 0; width: 100%; max-width: none; box-shadow: none; border-radius: 0; }
+  .no-print { display: none !important; }
+}

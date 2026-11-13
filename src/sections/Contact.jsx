@@ -7,6 +7,7 @@ import { useLang } from '../i18n/LanguageContext';
 import { Container, SectionHeading, Reveal, ease } from '../components/ui/primitives';
 import Button from '../components/ui/Button';
 import SocialIcon from '../components/ui/SocialIcon';
+import { useSite } from '../store/content';
 
 const chevron = `url("data:image/svg+xml,${encodeURIComponent(
   '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#284321" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>'
@@ -31,6 +32,7 @@ function Field({ label, id, error, required, children }) {
 
 export default function Contact({ inquiry }) {
   const { t, tr } = useLang();
+  const { contact } = useSite();
   const [form, setForm] = useState(empty);
   const [errors, setErrors] = useState({});
   const [sent, setSent] = useState(false);
@@ -58,9 +60,9 @@ export default function Contact({ inquiry }) {
   };
 
   const info = [
-    { icon: MapPin, label: t('contact.address'), value: tr(site.contact.address) },
-    { icon: Phone, label: t('contact.phone'), value: tr(site.contact.phone) },
-    { icon: Mail, label: t('contact.email'), value: tr(site.contact.email) },
+    { icon: MapPin, label: t('contact.address'), value: contact.address },
+    { icon: Phone, label: t('contact.phone'), value: contact.phone },
+    { icon: Mail, label: t('contact.email'), value: contact.email },
   ];
 
   return (

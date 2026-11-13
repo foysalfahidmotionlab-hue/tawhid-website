@@ -5,12 +5,14 @@ import { workflow } from '../data/content';
 import { useLang } from '../i18n/LanguageContext';
 import { Container, Rich, SectionHeading, Reveal, CountUp, ease } from '../components/ui/primitives';
 import ImagePlaceholder from '../components/ui/ImagePlaceholder';
+import { useSite } from '../store/content';
 
 // Replace with real photo paths of the Zinia facility when available.
 const productionImages = { factory: null, machinery: null, line: null };
 
 export default function Production() {
   const { t, tr, num } = useLang();
+  const { capacity } = useSite();
 
   return (
     <section id="production" className="bg-production relative isolate overflow-hidden py-24 text-forest-950 lg:py-36">
@@ -30,7 +32,7 @@ export default function Production() {
               <p className="text-[0.65rem] font-semibold uppercase tracking-[0.28em] text-gold-dark">{t('production.capLabel')}</p>
               <div className="mt-3 flex items-end gap-4">
                 <span className="text-gradient-gold-deep font-display text-[8rem] font-light leading-[0.8] tracking-[-0.04em] sm:text-[10rem]">
-                  <CountUp to={site.capacity} duration={2.4} />
+                  <CountUp to={capacity} duration={2.4} />
                 </span>
                 <span className="pb-3 font-display text-3xl font-light leading-none">
                   {t('units.tons')}

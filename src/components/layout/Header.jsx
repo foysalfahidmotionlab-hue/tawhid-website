@@ -1,13 +1,16 @@
 import { useEffect, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Menu, X, Phone, Mail } from 'lucide-react';
+import { Menu, X, Phone, Mail, ShoppingBag } from 'lucide-react';
 import { site } from '../../config/site';
 import { useLang } from '../../i18n/LanguageContext';
 import { useActiveSection } from '../../hooks/useActiveSection';
+import { useShop } from '../../store/shop';
+import { navigate } from '../../lib/router';
 import { Container, ease } from '../ui/primitives';
 import Button from '../ui/Button';
 import Logo from '../ui/Logo';
 import LangToggle from '../ui/LangToggle';
+import { useSite } from '../../store/content';
 
 const ids = site.nav.map((n) => n.href.slice(1));
 
@@ -45,14 +48,14 @@ export default function Header() {
           <Logo tone="dark" />
 
           <div className="flex items-center gap-6 xl:gap-8">
-            <nav aria-label="Primary" className="hidden lg:block">
+            <nav aria-label="Primary" className="hidden xl:block">
               <ul className="flex items-center gap-6 xl:gap-8">
                 {site.nav.map((item) => {
                   const isActive = active === item.href.slice(1);
                   return (
                     <li key={item.href}>
                       <a
-                        href={item.href}
+                        href={`/${item.href}`}
                         aria-current={isActive ? 'page' : undefined}
                         className={`relative block py-1 text-[0.85rem] font-medium transition-colors duration-300 ${
                           isActive ? 'text-forest-950' : 'text-ink/55 hover:text-forest-950'
@@ -74,10 +77,13 @@ export default function Header() {
             </nav>
 
             <div className="flex items-center gap-3">
-              <LangToggle tone="dark" id="header-lang" />
               <span className="hidden sm:block">
-                <Button href="#contact" variant="accent" size="sm">
-                  {t('nav.quote')}
+                <LangToggle tone="dark" id="header-lang" />
+              </span>
+              <CartButton />
+              <span className="hidden sm:block">
+                <Button href="/#order" variant="accent" size="sm">
+                  {t('shop.orderNow')}
                 </Button>
               </span>
               <button
@@ -85,7 +91,7 @@ export default function Header() {
                 onClick={() => setOpen(true)}
                 aria-label={t('nav.openMenu')}
                 aria-expanded={open}
-                className="grid h-11 w-11 place-items-center rounded-full bg-forest-900 text-cream transition-colors lg:hidden"
+                className="grid h-11 w-11 place-items-center rounded-full bg-forest-900 text-cream transition-colors xl:hidden"
               >
                 <Menu className="h-5 w-5" />
               </button>
@@ -100,14 +106,15 @@ export default function Header() {
 }
 
 function MobileMenu({ active, onClose }) {
-  const { t, tr, num } = useLang();
+  const { t, num } = useLang();
+  const { contact } = useSite();
   return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.3 }}
-      className="bg-hero fixed inset-0 z-[70] flex flex-col overflow-y-auto text-forest-950 lg:hidden"
+      className="bg-hero fixed inset-0 z-[70] flex flex-col overflow-y-auto text-forest-950 xl:hidden"
       role="dialog"
       aria-modal="true"
       aria-label="Menu"
@@ -135,7 +142,7 @@ function MobileMenu({ active, onClose }) {
                 transition={{ delay: 0.08 + i * 0.05, duration: 0.6, ease }}
               >
                 <a
-                  href={item.href}
+                  href={`/${item.href}`}
                   onClick={onClose}
                   className={`flex items-baseline gap-4 py-2 font-display text-[2.3rem] font-light leading-tight ${
                     active === item.href.slice(1) ? 'text-forest-950' : 'text-forest-950/45'
@@ -156,15 +163,36 @@ function MobileMenu({ active, onClose }) {
           className="mt-10 space-y-6"
         >
           <LangToggle tone="dark" id="menu-lang" />
-          <Button href="#contact" variant="accent" size="lg" onClick={onClose} className="w-full">
-            {t('nav.quote')}
+          <Button href="/#order" variant="accent" size="lg" onClick={onClose} className="w-full">
+            {t('shop.orderNow')}
           </Button>
           <div className="flex flex-col gap-2 text-sm text-ink/60">
-            <span className="flex items-center gap-2"><Phone className="h-4 w-4" />{tr(site.contact.phone)}</span>
-            <span className="flex items-center gap-2"><Mail className="h-4 w-4" />{tr(site.contact.email)}</span>
+            <span className="flex items-center gap-2"><Phone className="h-4 w-4" />{contact.phone}</span>
+            <span className="flex items-center gap-2"><Mail className="h-4 w-4" />{contact.email}</span>
           </div>
         </motion.div>
       </Container>
     </motion.div>
+  );
+}
+
+/** Cart icon with bag count; opens checkout (or the order section when empty). */
+function CartButton() {
+  const { t, num } = useLang();
+  const { totalBags } = useShop();
+  return (
+    <button
+      type="button"
+      onClick={() => (totalBags ? navigate('/checkout') : (window.location.href = '/#order'))}
+      aria-label={`${t('shop.cart')}${totalBags ? ` — ${num(totalBags)} ${t('shop.bags')}` : ''}`}
+      className="relative grid h-11 w-11 place-items-center rounded-full bg-white/70 text-forest-900 ring-1 ring-forest-900/10 transition hover:bg-white"
+    >
+      <ShoppingBag className="h-5 w-5" />
+      {totalBags > 0 && (
+        <span className="absolute -right-1 -top-1 grid h-5 min-w-5 place-items-center rounded-full bg-gold px-1 text-[0.65rem] font-bold text-forest-950">
+          {num(totalBags)}
+        </span>
+      )}
+    </button>
   );
 }

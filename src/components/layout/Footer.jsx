@@ -7,6 +7,7 @@ import { Container, Rich } from '../ui/primitives';
 import Button from '../ui/Button';
 import Logo from '../ui/Logo';
 import SocialIcon from '../ui/SocialIcon';
+import { useSite } from '../../store/content';
 
 function Column({ title, children }) {
   return (
@@ -19,10 +20,11 @@ function Column({ title, children }) {
 
 export default function Footer() {
   const { t, tr, num } = useLang();
+  const content = useSite();
 
   return (
     <footer className="grain relative isolate overflow-hidden bg-forest-800 text-cream">
-      <img src={images.heroField} alt="" loading="lazy" className="absolute inset-x-0 top-0 -z-20 h-[34rem] w-full object-cover opacity-35" />
+      <img src={content.footerBanner} alt="" loading="lazy" className="absolute inset-x-0 top-0 -z-20 h-[34rem] w-full object-cover opacity-35" />
       <div className="absolute inset-x-0 top-0 -z-10 h-[34rem] bg-gradient-to-b from-forest-800/30 via-forest-800/70 to-forest-800" />
 
       <Container className="pt-24">
@@ -34,14 +36,14 @@ export default function Footer() {
               <Rich parts={t('footer.tagline')} tone="dark" />
             </h2>
           </div>
-          <Button href="#contact" variant="accent" size="lg">{t('nav.quote')}</Button>
+          <Button href="/#order" variant="accent" size="lg">{t('shop.orderNow')}</Button>
         </div>
 
         {/* columns */}
         <div className="grid gap-12 py-14 sm:grid-cols-2 lg:grid-cols-12">
           <div className="lg:col-span-4">
             <Logo tone="light" />
-            <p className="mt-6 max-w-xs text-sm leading-relaxed text-cream/50">{t('footer.desc', { cap: num(site.capacity) })}</p>
+            <p className="mt-6 max-w-xs text-sm leading-relaxed text-cream/50">{t('footer.desc', { cap: num(content.capacity) })}</p>
             <div className="mt-6 flex gap-3">
               {site.socials.map((s) => (
                 <a
@@ -60,7 +62,7 @@ export default function Footer() {
             <Column title={t('footer.navigation')}>
               {site.nav.map((n) => (
                 <li key={n.href}>
-                  <a href={n.href} className="transition hover:text-gold-light">{t(`nav.${n.key}`)}</a>
+                  <a href={`/${n.href}`} className="transition hover:text-gold-light">{t(`nav.${n.key}`)}</a>
                 </li>
               ))}
             </Column>
@@ -70,7 +72,7 @@ export default function Footer() {
             <Column title={t('footer.products')}>
               {products.map((p) => (
                 <li key={p.id}>
-                  <a href="#products" className="transition hover:text-gold-light">{tr(p.name)}</a>
+                  <a href="/#order" className="transition hover:text-gold-light">{tr(p.name)}</a>
                 </li>
               ))}
             </Column>
@@ -78,9 +80,9 @@ export default function Footer() {
 
           <div className="lg:col-span-4">
             <Column title={t('footer.contact')}>
-              <li className="flex items-center gap-3"><MapPin className="h-4 w-4 shrink-0 text-gold-light/70" />{tr(site.contact.address)}</li>
-              <li className="flex items-center gap-3"><Phone className="h-4 w-4 shrink-0 text-gold-light/70" />{tr(site.contact.phone)}</li>
-              <li className="flex items-center gap-3"><Mail className="h-4 w-4 shrink-0 text-gold-light/70" />{tr(site.contact.email)}</li>
+              <li className="flex items-center gap-3"><MapPin className="h-4 w-4 shrink-0 text-gold-light/70" />{content.contact.address}</li>
+              <li className="flex items-center gap-3"><Phone className="h-4 w-4 shrink-0 text-gold-light/70" />{content.contact.phone}</li>
+              <li className="flex items-center gap-3"><Mail className="h-4 w-4 shrink-0 text-gold-light/70" />{content.contact.email}</li>
             </Column>
           </div>
         </div>
@@ -89,7 +91,7 @@ export default function Footer() {
       {/* giant wordmark */}
       <div aria-hidden="true" className="pointer-events-none select-none overflow-hidden">
         <p className="-mb-[0.24em] text-center font-display text-[24vw] font-light italic leading-none tracking-[-0.04em] text-gold-light/[0.1]">
-          {t('brand.short')}
+          {content.brandShort || t('brand.short')}
         </p>
       </div>
 
@@ -98,7 +100,7 @@ export default function Footer() {
           <p>
             {t('footer.rights', { year: num(new Date().getFullYear()) })} <span className="text-cream/55">{t('footer.trademarkNote')}</span>
           </p>
-          <a href="#home" className="inline-flex items-center gap-2 transition hover:text-cream">
+          <a href="/" className="inline-flex items-center gap-2 transition hover:text-cream">
             {t('footer.top')} <ArrowUp className="h-3.5 w-3.5" />
           </a>
         </Container>

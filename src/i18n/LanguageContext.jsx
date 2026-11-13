@@ -35,15 +35,16 @@ export function LanguageProvider({ children }) {
     /** Digits in the active language: 48 → ৪৮ in Bangla. */
     const num = (v) => (lang === 'bn' ? String(v).replace(/\d/g, (d) => BN_DIGITS[d]) : String(v));
     /** Look up interface text by path, e.g. t('nav.home'); {name} placeholders filled from vars. */
-    const t = (path, vars) => {
-      let s = path.split('.').reduce((o, k) => o?.[k], strings[lang]);
+    const tFor = (l) => (path, vars) => {
+      let s = path.split('.').reduce((o, k) => o?.[k], strings[l]);
       if (s === undefined) return path;
       if (vars && typeof s === 'string') s = s.replace(/\{(\w+)\}/g, (_, k) => vars[k] ?? '');
       return s;
     };
+    const t = tFor(lang);
     /** Pick the active language from a bilingual value { bn, en }. */
     const tr = (v) => (v && typeof v === 'object' && 'bn' in v ? v[lang] : v);
-    return { lang, setLang, t, tr, num };
+    return { lang, setLang, t, tFor, tr, num };
   }, [lang]);
 
   return <LanguageContext.Provider value={value}>{children}</LanguageContext.Provider>;

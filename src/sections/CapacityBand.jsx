@@ -4,10 +4,12 @@ import { packs } from '../data/products';
 import { useLang } from '../i18n/LanguageContext';
 import { Container, CountUp, ease } from '../components/ui/primitives';
 import Button from '../components/ui/Button';
+import { useSite } from '../store/content';
 
 /** "48 tons of rice, every single day" band with the product family. */
 export default function CapacityBand() {
   const { t } = useLang();
+  const { capacity } = useSite();
 
   return (
     <section
@@ -18,7 +20,7 @@ export default function CapacityBand() {
       <Container className="relative flex flex-col items-center justify-between gap-6 py-14 text-center lg:flex-row lg:gap-10 lg:py-6 lg:text-left">
         <div className="flex items-end gap-5">
           <span className="text-band-num font-display text-[7rem] font-light leading-[0.8] tracking-[-0.04em] lg:text-[8.5rem]">
-            <CountUp to={site.capacity} duration={2.2} />
+            <CountUp to={capacity} duration={2.2} />
           </span>
           <span className="pb-2 text-left font-display text-2xl font-light leading-snug sm:text-[1.7rem]">
             {t('band.line1')}

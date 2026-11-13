@@ -4,11 +4,13 @@ import { gallery, galleryCategories } from '../data/content';
 import { useLang } from '../i18n/LanguageContext';
 import { Container, SectionHeading, Reveal, ease } from '../components/ui/primitives';
 import ImagePlaceholder from '../components/ui/ImagePlaceholder';
+import { useSite } from '../store/content';
 
 const tones = ['light', 'mid', 'dark'];
 
 function Tile({ item, index }) {
   const { t, tr } = useLang();
+  const { galleryImage } = useSite();
   const label = tr(item.label);
 
   return (
@@ -16,10 +18,10 @@ function Tile({ item, index }) {
       <div className="h-full w-full transition-transform duration-[1.2s] ease-out group-hover:scale-[1.05]">
         {item.pack ? (
           <div className="flex h-full w-full items-center justify-center bg-[radial-gradient(circle_at_50%_55%,#fff,#efe6d2_72%)] p-3">
-            <img src={item.src} alt={label} loading="lazy" className="h-full w-auto max-w-full object-contain" />
+            <img src={galleryImage(item.id, item.src)} alt={label} loading="lazy" className="h-full w-auto max-w-full object-contain" />
           </div>
         ) : (
-          <ImagePlaceholder src={item.src} label={label} icon={item.icon} tone={tones[index % 3]} className="h-full w-full" rounded="rounded-none" />
+          <ImagePlaceholder src={galleryImage(item.id, item.src)} label={label} icon={item.icon} tone={tones[index % 3]} className="h-full w-full" rounded="rounded-none" />
         )}
       </div>
       <div className="pointer-events-none absolute inset-x-0 bottom-0 flex translate-y-2 items-end justify-between bg-gradient-to-t from-forest-950/85 to-transparent p-5 pt-16 opacity-0 transition-all duration-500 group-hover:translate-y-0 group-hover:opacity-100">

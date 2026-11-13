@@ -6,6 +6,7 @@ import { products } from '../data/products';
 import { useLang } from '../i18n/LanguageContext';
 import { Container, Eyebrow, Rich, ease } from '../components/ui/primitives';
 import Button from '../components/ui/Button';
+import { useSite } from '../store/content';
 
 const AUTOPLAY_MS = 6500;
 const SWING_DEG = 42; // how far packs travel along the circular path
@@ -18,6 +19,7 @@ const SWING_DEG = 42; // how far packs travel along the circular path
  */
 export default function Hero({ activeId, autoplay, onAutoAdvance, onChoose, onInquire }) {
   const { t, tr, num } = useLang();
+  const content = useSite();
   const n = products.length;
   const index = Math.max(0, products.findIndex((p) => p.id === activeId));
   const product = products[index];
@@ -47,7 +49,7 @@ export default function Hero({ activeId, autoplay, onAutoAdvance, onChoose, onIn
       {/* soft light + leaf-green glows */}
       {/* soft paddy field rising from the bottom of the hero */}
       <img
-        src={images.greenField}
+        src={content.heroBg}
         alt=""
         className="pointer-events-none absolute inset-x-0 bottom-0 -z-10 h-[46%] w-full object-cover object-bottom opacity-[0.42] mix-blend-multiply [mask-image:linear-gradient(to_top,#000_15%,transparent_100%)]"
       />
@@ -61,9 +63,9 @@ export default function Hero({ activeId, autoplay, onAutoAdvance, onChoose, onIn
           <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1, delay: 0.3, ease }}>
             <Eyebrow>{t('hero.eyebrow')}</Eyebrow>
             <h1 className="hero-title mt-6 font-display text-[3.2rem] font-light leading-[1] tracking-[-0.03em] sm:text-7xl lg:text-[4.6rem] xl:text-[5.4rem]">
-              <Rich parts={t('hero.title')} />
+              <Rich parts={content.heroTitle || t('hero.title')} />
             </h1>
-            <p className="mt-6 max-w-sm text-lg leading-relaxed text-ink/65">{t('hero.sub')}</p>
+            <p className="mt-6 max-w-sm text-lg leading-relaxed text-ink/65">{content.heroSub || t('hero.sub')}</p>
             <span className="mt-7 inline-flex items-center gap-2 rounded-full border border-gold/45 bg-white/60 px-4 py-2 text-sm font-medium text-forest-800 backdrop-blur">
               <Award className="h-4 w-4 text-gold-dark" strokeWidth={1.8} />
               {t('brand.trademarkLine')}
@@ -101,7 +103,7 @@ export default function Hero({ activeId, autoplay, onAutoAdvance, onChoose, onIn
                   transition={{ duration: 1.15, ease: [0.65, 0, 0.35, 1], opacity: { duration: on ? 0.6 : 0.8, delay: on ? 0.05 : 0.1 } }}
                 >
                   <motion.img
-                    src={p.image}
+                    src={content.showcaseImage(p.id, p.image)}
                     alt={on ? tr(p.name) : ''}
                     loading="eager"
                     decoding="async"

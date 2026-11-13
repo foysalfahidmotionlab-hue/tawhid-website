@@ -1,13 +1,15 @@
 import { Wheat } from 'lucide-react';
 import { site } from '../../config/site';
 import { useLang } from '../../i18n/LanguageContext';
+import { useSite } from '../../store/content';
 
 /** Emblem logo placeholder — set `site.logo` to an image path to use the real logo. */
 export default function Logo({ tone = 'dark', className = '' }) {
   const { t } = useLang();
+  const { brandShort } = useSite();
   const light = tone === 'light';
   return (
-    <a href="#home" className={`flex shrink-0 items-center gap-3 ${className}`} aria-label={t('brand.name')}>
+    <a href="/" className={`flex shrink-0 items-center gap-3 ${className}`} aria-label={t('brand.name')}>
       {site.logo ? (
         <img src={site.logo} alt={t('brand.name')} className="h-12 w-auto" />
       ) : (
@@ -22,7 +24,7 @@ export default function Logo({ tone = 'dark', className = '' }) {
           </span>
           <span className="leading-none">
             <span className={`block font-display text-[1.5rem] font-normal tracking-tight transition-colors duration-500 ${light ? 'text-cream' : 'text-forest-950'}`}>
-              {t('brand.short')}
+              {brandShort || t('brand.short')}
             </span>
             <span
               className={`mt-1 block text-[0.55rem] font-semibold uppercase tracking-[0.32em] transition-colors duration-500 ${

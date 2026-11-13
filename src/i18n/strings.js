@@ -1,3 +1,5 @@
+import { shopStrings } from './shopStrings';
+
 /**
  * All interface text, in Bangla (default) and English.
  * Headings that contain a highlighted word are written as an array of parts:
@@ -24,6 +26,7 @@ export const strings = {
       home: 'হোম',
       about: 'আমাদের সম্পর্কে',
       products: 'আমাদের পণ্য',
+      order: 'অর্ডার',
       production: 'উৎপাদন',
       gallery: 'গ্যালারি',
       contact: 'যোগাযোগ',
@@ -164,6 +167,7 @@ export const strings = {
       home: 'Home',
       about: 'About Us',
       products: 'Our Products',
+      order: 'Order',
       production: 'Production',
       gallery: 'Gallery',
       contact: 'Contact',
@@ -284,3 +288,6 @@ export const strings = {
     placeholder: 'Your photo here',
   },
 };
+
+Object.assign(strings.bn, shopStrings.bn);
+Object.assign(strings.en, shopStrings.en);

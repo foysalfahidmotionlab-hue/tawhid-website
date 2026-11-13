@@ -3,10 +3,12 @@ import { site } from '../config/site';
 import { highlights } from '../data/content';
 import { useLang } from '../i18n/LanguageContext';
 import { Container, Reveal, SectionHeading, ease } from '../components/ui/primitives';
+import { useSite } from '../store/content';
 
 /** "Quality You Can Trust" — four reasons to choose Zinia. */
 export default function Why() {
   const { t, tr, num } = useLang();
+  const { capacity } = useSite();
 
   return (
     <section id="about" className="bg-cream py-24 lg:py-32">
@@ -32,7 +34,7 @@ export default function Why() {
               >
                 <span className="grid h-12 w-12 place-items-center rounded-full border border-gold/60 text-gold-dark transition-colors duration-500 group-hover:bg-forest-900 group-hover:text-gold-light">
                   {i === 0 ? (
-                    <span className="font-display text-base">{num(site.capacity)}</span>
+                    <span className="font-display text-base">{num(capacity)}</span>
                   ) : (
                     <Icon className="h-5 w-5" strokeWidth={1.5} />
                   )}

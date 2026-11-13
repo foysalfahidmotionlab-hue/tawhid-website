@@ -8,3 +8,10 @@ tools/preview/out
 
 # separate poster work, not part of the website
 poster
+
+# database, uploads and local secrets
+data
+.env
+.env.*
+*.local.txt
+!.env.example

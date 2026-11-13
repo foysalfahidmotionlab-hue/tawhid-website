@@ -6,6 +6,7 @@ import { images } from '../data/images';
 import { useLang } from '../i18n/LanguageContext';
 import { Container, Reveal, Eyebrow, Rich, ease } from '../components/ui/primitives';
 import ImagePlaceholder from '../components/ui/ImagePlaceholder';
+import { useSite } from '../store/content';
 
 // Replace with a real factory photo path when available.
 const factoryPhoto = null;
@@ -15,14 +16,15 @@ export default function Story() {
   const band = useRef(null);
   const { scrollYProgress } = useScroll({ target: band, offset: ['start end', 'end start'] });
   const y = useTransform(scrollYProgress, [0, 1], ['-12%', '12%']);
-  const cap = num(site.capacity);
+  const content = useSite();
+  const cap = num(content.capacity);
 
   return (
     <section id="story" className="relative bg-cream">
       {/* cinematic band */}
       <div ref={band} className="grain relative isolate flex min-h-[72svh] items-end overflow-hidden text-cream">
         <motion.img
-          src={images.villageField}
+          src={content.storyBanner}
           alt={t('story.fieldAlt')}
           loading="lazy"
           style={{ y }}
