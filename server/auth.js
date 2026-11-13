@@ -117,12 +117,16 @@ setInterval(() => {
  */
 export function ensureAdminFromEnv() {
   const email = process.env.ADMIN_EMAIL?.trim().toLowerCase();
-  const password = process.env.ADMIN_PASSWORD;
-  if (!email || !password) return;
+  // Trim stray spaces/newlines that easily slip in when pasting into a dashboard.
+  const password = process.env.ADMIN_PASSWORD?.trim();
+  if (!email || !password) {
+    if (email || password) console.error('Admin from settings skipped: set both ADMIN_EMAIL and ADMIN_PASSWORD.');
+    return;
+  }
   if (db.prepare('SELECT 1 FROM admin_users WHERE email = ?').get(email)) return;
   // A short test password (e.g. admin / admin) is accepted only when the owner
   // explicitly turns on ALLOW_SIMPLE_ADMIN_PASSWORD=1 in the host's settings.
-  const allowSimple = process.env.ALLOW_SIMPLE_ADMIN_PASSWORD === '1';
+  const allowSimple = /^(1|true|yes|on)$/i.test(process.env.ALLOW_SIMPLE_ADMIN_PASSWORD?.trim() || '');
   const weak = validatePasswordStrength(password);
   if (weak && !allowSimple) {
     console.error(`ADMIN_PASSWORD not used: ${weak} (set ALLOW_SIMPLE_ADMIN_PASSWORD=1 to allow a simple test password)`);
