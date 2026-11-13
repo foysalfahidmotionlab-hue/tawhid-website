@@ -72,6 +72,8 @@ the database lives in `/tmp` and **orders, uploads and content edits can disappe
 1. Import the GitHub repo on vercel.com (settings come from `vercel.json`).
 2. In **Settings → Environment Variables** add `ADMIN_EMAIL`, `ADMIN_PASSWORD`
    (10+ characters, letters and numbers) and optionally `ADMIN_NAME`, then redeploy.
+   For a quick test login such as `admin` / `admin`, also add `ALLOW_SIMPLE_ADMIN_PASSWORD=1`
+   — anyone could guess it, so remove it (and use a strong password) before real orders.
 3. Sign in at `https://<your-project>.vercel.app/admin`.
 
 The admin account is re-created from these settings whenever the data is reset.

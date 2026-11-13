@@ -120,11 +120,15 @@ export function ensureAdminFromEnv() {
   const password = process.env.ADMIN_PASSWORD;
   if (!email || !password) return;
   if (db.prepare('SELECT 1 FROM admin_users WHERE email = ?').get(email)) return;
+  // A short test password (e.g. admin / admin) is accepted only when the owner
+  // explicitly turns on ALLOW_SIMPLE_ADMIN_PASSWORD=1 in the host's settings.
+  const allowSimple = process.env.ALLOW_SIMPLE_ADMIN_PASSWORD === '1';
   const weak = validatePasswordStrength(password);
-  if (weak) {
-    console.error(`ADMIN_PASSWORD not used: ${weak}`);
+  if (weak && !allowSimple) {
+    console.error(`ADMIN_PASSWORD not used: ${weak} (set ALLOW_SIMPLE_ADMIN_PASSWORD=1 to allow a simple test password)`);
     return;
   }
+  if (weak) console.warn('WARNING: admin account uses a simple test password. Remove ALLOW_SIMPLE_ADMIN_PASSWORD before taking real orders.');
   db.prepare('INSERT INTO admin_users (email, name, password_hash) VALUES (?, ?, ?)')
     .run(email, process.env.ADMIN_NAME?.trim() || 'Admin', hashPassword(password));
   console.log(`Admin account created for ${email} from environment settings.`);
