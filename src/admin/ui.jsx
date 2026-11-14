@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Loader2 } from 'lucide-react';
 import { api } from '../lib/api';
+import { paymentState } from '../shared/rules';
 
 export const money = (n) => (n == null ? '—' : `৳ ${new Intl.NumberFormat('en-IN').format(n)}`);
 export const dateTime = (iso) =>
@@ -22,14 +23,19 @@ const STATUS_CLS = {
   delivered: 'bg-emerald-100 text-emerald-900 ring-emerald-200',
   cancelled: 'bg-rose-100 text-rose-900 ring-rose-200',
 };
-const PAY_CLS = { unpaid: 'bg-amber-50 text-amber-900 ring-amber-200', paid: 'bg-emerald-50 text-emerald-900 ring-emerald-200', refunded: 'bg-slate-100 text-slate-700 ring-slate-200' };
-export const PAY_LABEL = { unpaid: 'Unpaid (COD)', paid: 'Paid', refunded: 'Refunded' };
+const PAY_CLS = { unpaid: 'bg-amber-50 text-amber-900 ring-amber-200', advance_paid: 'bg-sky-50 text-sky-900 ring-sky-200', paid: 'bg-emerald-50 text-emerald-900 ring-emerald-200', refunded: 'bg-slate-100 text-slate-700 ring-slate-200' };
+export const PAY_LABEL = { unpaid: 'Unpaid', advance_paid: 'Advance paid', paid: 'Paid in full', refunded: 'Refunded' };
+export const PLAN_LABEL = { advance10: '10% advance', delivery: 'Delivery charge in advance', advance50: '50% advance', full: 'Full payment in advance', cod: 'Cash on delivery' };
 
 export const Badge = ({ children, className = '' }) => (
   <span className={`inline-flex items-center whitespace-nowrap rounded-full px-2.5 py-0.5 text-xs font-semibold ring-1 ring-inset ${className}`}>{children}</span>
 );
 export const StatusBadge = ({ status }) => <Badge className={STATUS_CLS[status]}>{STATUS_LABEL[status]}</Badge>;
-export const PayBadge = ({ status }) => <Badge className={PAY_CLS[status]}>{PAY_LABEL[status]}</Badge>;
+/** Pass the order (or {payment_status, amount_paid}); shows Unpaid / Advance paid / Paid in full / Refunded. */
+export const PayBadge = ({ order }) => {
+  const s = paymentState(order);
+  return <Badge className={PAY_CLS[s]}>{PAY_LABEL[s]}</Badge>;
+};
 export const TypeBadge = ({ type }) => (
   <Badge className={type === 'wholesale' ? 'bg-forest-900 text-cream ring-forest-900' : 'bg-white text-forest-800 ring-forest-900/15'}>
     {type === 'wholesale' ? 'Wholesale' : 'Retail'}

@@ -3,7 +3,7 @@
 import { randomBytes } from 'node:crypto';
 import { db, tx } from './db.js';
 import { DISTRICT_KEYS, DHAKA_ZONE } from '../src/shared/districts.js';
-import { WHOLESALE_MIN_BAGS, normalizeBdPhone, parseQty, unitPrice } from '../src/shared/rules.js';
+import { WHOLESALE_MIN_BAGS, PAYMENT_PLANS, normalizeBdPhone, parseQty, unitPrice } from '../src/shared/rules.js';
 
 export class OrderError extends Error {
   constructor(code, message, status = 400) {
@@ -141,6 +141,8 @@ export function createOrder(body) {
     if (existing) return { ...existing, duplicate: true };
   }
   const customer = validateCustomer(body?.customer);
+  const plan = body?.payment_plan;
+  if (!PAYMENT_PLANS.includes(plan)) throw new OrderError('payment_plan', 'Choose a payment option.');
 
   return tx(() => {
     // Price inside the transaction so stock and prices are consistent.
@@ -163,13 +165,13 @@ export function createOrder(body) {
       .prepare(
         `INSERT INTO orders (order_no, receipt_token, idempotency_key, customer_id, customer_name, customer_phone,
           address, district, upazila, order_type, notes, total_bags, subtotal, delivery_charge, delivery_source,
-          delivery_rate_label, grand_total)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+          delivery_rate_label, grand_total, payment_plan)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
       )
       .run(
         order_no, receipt_token, key, customerId, customer.name, customer.phone, customer.address,
         customer.district, customer.upazila, q.order_type, customer.notes, q.total_bags, q.subtotal,
-        q.delivery.charge, q.delivery.source, q.delivery.label, q.grand_total
+        q.delivery.charge, q.delivery.source, q.delivery.label, q.grand_total, plan
       );
 
     const insItem = db.prepare(

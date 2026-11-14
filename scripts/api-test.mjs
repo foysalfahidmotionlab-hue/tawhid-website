@@ -57,11 +57,17 @@ r = await api('/api/quote', { method: 'POST', body: { order_type: 'retail', item
 check('fractional quantity rejected', r.status === 400);
 const inactive = (await api('/api/admin/products', { admin: true })).json;
 check('admin API blocked without login', !Array.isArray(inactive));
-r = await api('/api/orders', { method: 'POST', body: { order_type: 'retail', items: [{ product_id: katari.id, quantity: 1, unit_price: 1 }], customer: { ...customer, phone: '12345' }, idempotency_key: key() } });
+r = await api('/api/orders', { method: 'POST', body: { order_type: 'retail', items: [{ product_id: katari.id, quantity: 1, unit_price: 1 }], customer: { ...customer, phone: '12345' }, payment_plan: 'advance10', idempotency_key: key() } });
 check('invalid phone rejected', r.status === 400 && r.json.fields?.phone === 'phone');
 
+// --- a payment option is required ---
+r = await api('/api/orders', { method: 'POST', body: { order_type: 'retail', items: [{ product_id: katari.id, quantity: 1 }], customer, idempotency_key: key() } });
+check('order without payment option rejected', r.status === 400 && r.json.code === 'payment_plan', r.json.error);
+r = await api('/api/orders', { method: 'POST', body: { order_type: 'retail', items: [{ product_id: katari.id, quantity: 1 }], customer, payment_plan: 'free', idempotency_key: key() } });
+check('unknown payment option rejected', r.status === 400 && r.json.code === 'payment_plan');
+
 // --- price tampering is ignored ---
-r = await api('/api/orders', { method: 'POST', body: { order_type: 'retail', items: [{ product_id: katari.id, quantity: 2, unit_price: 1, line_total: 2 }], subtotal: 2, delivery_charge: 0, customer, idempotency_key: key() } });
+r = await api('/api/orders', { method: 'POST', body: { order_type: 'retail', items: [{ product_id: katari.id, quantity: 2, unit_price: 1, line_total: 2 }], subtotal: 2, delivery_charge: 0, customer, payment_plan: 'advance10', idempotency_key: key() } });
 check('retail order saved', r.status === 201 && /^ZN-\d{6}-\d{4}$/.test(r.json.order_no), r.json.order_no);
 const retailToken = r.json.receipt_token;
 let rc = await api(`/api/receipt/${retailToken}`);
@@ -73,7 +79,7 @@ check('bad receipt token → 404', (await api('/api/receipt/not-a-real-token-123
 
 // --- duplicate submission ---
 const k = key();
-const body = { order_type: 'retail', items: [{ product_id: nazir.id, quantity: 1 }], customer, idempotency_key: k };
+const body = { order_type: 'retail', items: [{ product_id: nazir.id, quantity: 1 }], customer, payment_plan: 'full', idempotency_key: k };
 const [a, b] = await Promise.all([api('/api/orders', { method: 'POST', body }), api('/api/orders', { method: 'POST', body })]);
 check('double submit creates one order', a.json.order_no === b.json.order_no, `${a.json.order_no} / ${b.json.order_no}`);
 
@@ -104,6 +110,20 @@ r = await api(`/api/admin/orders/${id}/status`, { method: 'POST', admin: true, b
 check('admin confirms order', r.status === 200);
 rc = await api(`/api/receipt/${retailToken}`);
 check('receipt now shows 3900 + 150 = 4050, confirmed', rc.json.grand_total === 4050 && rc.json.status === 'confirmed');
+check('receipt keeps payment option 10% advance', rc.json.payment_plan === 'advance10' && rc.json.amount_paid === 0);
+
+// --- payments: advance (10% of 3900 = 390), then full ---
+r = await api(`/api/admin/orders/${id}/payment`, { method: 'POST', admin: true, body: { payment_status: 'advance_paid' } });
+check('admin records advance received', r.status === 200, r.json.error);
+rc = await api(`/api/receipt/${retailToken}`);
+check('advance 390 recorded, still not fully paid', rc.json.amount_paid === 390 && rc.json.payment_status === 'unpaid');
+r = await api(`/api/admin/orders?payment=advance_paid`, { admin: true });
+check('filter: advance paid', r.json.rows.some((x) => x.id === id));
+r = await api(`/api/admin/orders/${id}/payment`, { method: 'POST', admin: true, body: { payment_status: 'paid' } });
+rc = await api(`/api/receipt/${retailToken}`);
+check('paid in full = 4050', r.status === 200 && rc.json.payment_status === 'paid' && rc.json.amount_paid === 4050);
+r = await api(`/api/admin/orders/${id}/payment`, { method: 'POST', admin: true, body: { payment_status: 'bogus' } });
+check('invalid payment status rejected', r.status === 400);
 
 // price change keeps history
 r = await api(`/api/admin/products/${katari.id}`, { method: 'PATCH', admin: true, body: { wholesale_price: 2000 } });

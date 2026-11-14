@@ -29,6 +29,10 @@ const CONTACT = [
   ['contact_phone', 'Phone', ''],
   ['contact_email', 'Email', ''],
 ];
+const PAYMENT = [
+  ['payment_instructions_bn', 'How to send the advance (Bangla)', 'যেমন: বিকাশ/নগদ নম্বর বা ব্যাংক হিসাব, আর রেফারেন্সে অর্ডার নম্বর লিখতে বলুন', true],
+  ['payment_instructions_en', 'How to send the advance (English)', 'e.g. bKash/Nagad number or bank account, and ask for the order number as reference', true],
+];
 const BANNERS = [
   ['hero_bg_image', 'Hero background (paddy field)', images.greenField],
   ['story_banner_image', 'Story banner', images.villageField],
@@ -112,6 +116,10 @@ export default function Content() {
         <Card title="Homepage hero"><div className="space-y-4">{TEXT.map(textField)}</div></Card>
         <Card title="Company information"><div className="grid gap-4 sm:grid-cols-2">{COMPANY.map(textField)}</div></Card>
         <Card title="Contact information"><div className="grid gap-4 sm:grid-cols-2">{CONTACT.map(textField)}</div></Card>
+        <Card title="Advance payment instructions">
+          <p className="mb-3 text-xs text-ink/50">Shown at checkout and on receipts for 10%, 50%, delivery-charge and full advance orders. Leave empty to say “our team will call you”.</p>
+          <div className="space-y-4">{PAYMENT.map(textField)}</div>
+        </Card>
         <Card title="Banner images">
           <div className="space-y-2">
             {BANNERS.map(([k, label, def]) => (

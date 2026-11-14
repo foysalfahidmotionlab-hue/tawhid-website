@@ -4,7 +4,8 @@ import { api } from '../lib/api';
 import { Link } from '../lib/router';
 import { districtBn } from '../shared/districts';
 import { ReceiptDoc, downloadReceiptPdf } from '../pages/Receipt';
-import { Card, PageHeader, StatusBadge, TypeBadge, PayBadge, money, dateTime, useLoad, Btn, Notice, inputCls, STATUS_LABEL, PAY_LABEL } from './ui';
+import { Card, PageHeader, StatusBadge, TypeBadge, PayBadge, money, dateTime, useLoad, Btn, Notice, inputCls, STATUS_LABEL, PAY_LABEL, PLAN_LABEL } from './ui';
+import { paymentBreakdown, paymentState } from '../shared/rules';
 
 const NEXT_LABEL = {
   confirmed: 'Confirm order',
@@ -71,7 +72,7 @@ export default function OrderDetail({ id }) {
 
       <div className="mb-4 flex flex-wrap gap-2">
         <StatusBadge status={o.status} />
-        <PayBadge status={o.payment_status} />
+        <PayBadge order={o} />
         <TypeBadge type={o.order_type} />
       </div>
       {msg.text && <div className="mb-4"><Notice tone={msg.tone === 'ok' ? 'ok' : 'error'}>{msg.text}</Notice></div>}
@@ -176,21 +177,51 @@ export default function OrderDetail({ id }) {
             <p className="mt-2 text-xs text-ink/45">Enter 0 for free delivery. The customer’s receipt link shows the new total.</p>
           </Card>
 
-          <Card title="Payment (cash on delivery)">
-            <p className="text-sm">Current: <PayBadge status={o.payment_status} /></p>
-            <div className="mt-3 flex flex-wrap gap-2">
-              {o.payment_status !== 'paid' && o.status !== 'cancelled' && (
-                <Btn variant="primary" busy={busy === 'paid'} onClick={() => window.confirm('Mark as paid? Only do this after the money has been received.') && run('paid', 'payment', { payment_status: 'paid' }, 'Marked as paid.')}>
-                  Mark as paid
-                </Btn>
-              )}
-              {o.payment_status === 'paid' && (
+          <Card title="Payment">
+            {(() => {
+              const state = paymentState(o);
+              const { advance, balance } = paymentBreakdown(o);
+              const received = state === 'paid' ? o.grand_total : state === 'refunded' ? 0 : o.amount_paid;
+              const pending = <span className="text-xs text-amber-700">after delivery charge</span>;
+              const live = o.status !== 'cancelled';
+              return (
                 <>
-                  <Btn busy={busy === 'unpaid'} onClick={() => run('unpaid', 'payment', { payment_status: 'unpaid' }, 'Marked as unpaid.')}>Mark as unpaid</Btn>
-                  <Btn busy={busy === 'refunded'} onClick={() => window.confirm('Mark this payment as refunded?') && run('refunded', 'payment', { payment_status: 'refunded' }, 'Marked as refunded.')}>Refunded</Btn>
+                  <dl className="space-y-1.5 text-sm">
+                    <div className="flex justify-between gap-3"><dt className="text-ink/55">Option</dt><dd className="text-right font-semibold">{PLAN_LABEL[o.payment_plan] || PLAN_LABEL.cod}</dd></div>
+                    <div className="flex justify-between gap-3"><dt className="text-ink/55">Advance due</dt><dd>{advance != null ? money(advance) : pending}</dd></div>
+                    <div className="flex justify-between gap-3"><dt className="text-ink/55">Received</dt><dd className="font-semibold text-emerald-700">{money(received || 0)}</dd></div>
+                    <div className="flex justify-between gap-3 border-t border-forest-900/10 pt-1.5"><dt className="font-semibold">Balance</dt><dd className="font-semibold">{o.grand_total != null && state !== 'refunded' ? money(Math.max(0, o.grand_total - (received || 0))) : balance != null ? money(balance) : pending}</dd></div>
+                  </dl>
+                  <p className="mt-3 text-sm">Status: <PayBadge order={o} /></p>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {live && state === 'unpaid' && advance > 0 && (
+                      <Btn
+                        variant="primary"
+                        busy={busy === 'advance_paid'}
+                        onClick={() => window.confirm(`Mark the advance of ${money(advance)} as received? Only do this after the money has arrived.`) && run('advance_paid', 'payment', { payment_status: 'advance_paid' }, 'Advance marked as received.')}
+                      >
+                        Advance received
+                      </Btn>
+                    )}
+                    {live && state !== 'paid' && state !== 'refunded' && (
+                      <Btn
+                        variant={state === 'unpaid' && advance > 0 ? 'secondary' : 'primary'}
+                        busy={busy === 'paid'}
+                        onClick={() => window.confirm('Mark as paid in full? Only do this after all the money has been received.') && run('paid', 'payment', { payment_status: 'paid' }, 'Marked as paid in full.')}
+                      >
+                        Paid in full
+                      </Btn>
+                    )}
+                    {(state === 'paid' || state === 'advance_paid') && (
+                      <>
+                        <Btn busy={busy === 'unpaid'} onClick={() => run('unpaid', 'payment', { payment_status: 'unpaid' }, 'Marked as unpaid.')}>Mark as unpaid</Btn>
+                        <Btn busy={busy === 'refunded'} onClick={() => window.confirm('Mark this payment as refunded?') && run('refunded', 'payment', { payment_status: 'refunded' }, 'Marked as refunded.')}>Refunded</Btn>
+                      </>
+                    )}
+                  </div>
                 </>
-              )}
-            </div>
+              );
+            })()}
           </Card>
 
           <Card title="Internal notes">

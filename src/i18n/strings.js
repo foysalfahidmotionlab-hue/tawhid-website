@@ -57,6 +57,13 @@ export const strings = {
       factDaily: 'টন দৈনিক উৎপাদন',
       viewPrice: 'দাম ও অর্ডার',
     },
+    trademark: {
+      eyebrow: 'আমাদের ট্রেডমার্ক',
+      title: [{ t: 'জিনিয়া', mark: true }, { t: ' — সেরা চালের পরিচয়' }],
+      text: 'জিনিয়া™ মেসার্স তাওহীদ অটো রাইস মিলের নিজস্ব ট্রেডমার্ক। আমাদের মিলে প্রক্রিয়াজাত চাল এই নামেই আপনার কাছে পৌঁছায় — প্যাকেটে জিনিয়া নাম দেখে চিনে নিন।',
+      points: ['নিজস্ব মিলে প্রক্রিয়াজাত', '২৫ কেজির বস্তা', 'খুচরা ও পাইকারি'],
+      owner: 'ট্রেডমার্কের মালিক: মেসার্স তাওহীদ অটো রাইস মিল',
+    },
     why: {
       eyebrow: 'কেন জিনিয়া',
       title: [{ t: 'যে মানে ' }, { t: 'আস্থা', mark: true }, { t: ' রাখা যায়' }],
@@ -206,6 +213,13 @@ export const strings = {
       factTypes: 'Retail & wholesale',
       factDaily: 'tons produced daily',
       viewPrice: 'Price & order',
+    },
+    trademark: {
+      eyebrow: 'Our trademark',
+      title: [{ t: 'Zinia', mark: true }, { t: ' — the name behind our rice' }],
+      text: 'Zinia™ is the own trademark of M/s Tawhid Auto Rice Mill. Rice processed at our mill reaches you under this name — look for Zinia on the pack.',
+      points: ['Processed at our own mill', '25 kg bags', 'Retail & wholesale'],
+      owner: 'Trademark owner: M/s Tawhid Auto Rice Mill',
     },
     why: {
       eyebrow: 'Why Zinia',

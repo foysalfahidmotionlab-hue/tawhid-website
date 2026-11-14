@@ -94,7 +94,9 @@ publicRouter.get('/receipt/:token', (req, res) => {
     delivery_source: o.delivery_source,
     grand_total: o.grand_total,
     payment_method: o.payment_method,
+    payment_plan: o.payment_plan,
     payment_status: o.payment_status,
+    amount_paid: o.amount_paid,
     status: o.status,
     items: o.items.map((i) => ({
       name_bn: i.name_bn,

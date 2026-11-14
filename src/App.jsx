@@ -5,6 +5,7 @@ import Footer from './components/layout/Footer';
 import Hero from './sections/Hero';
 import Shop, { CartBar } from './sections/Shop';
 import Why from './sections/Why';
+import Trademark from './sections/Trademark';
 import Grains from './sections/Grains';
 import CapacityBand from './sections/CapacityBand';
 import Story from './sections/Story';
@@ -39,6 +40,7 @@ function Home() {
     <>
       <Hero activeId={activeId} autoplay={autoplay} onAutoAdvance={setActiveId} onChoose={choose} onInquire={toOrder} />
       <Shop />
+      <Trademark />
       <Why />
       <Grains activeId={activeId} onChoose={choose} />
       <CapacityBand />

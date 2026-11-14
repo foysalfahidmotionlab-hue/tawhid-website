@@ -12,6 +12,7 @@ import { Link } from '../lib/router';
 import { districtBn } from '../shared/districts';
 import { Container } from '../components/ui/primitives';
 import { BRAND } from '../components/ui/Logo';
+import { paymentBreakdown, paymentState } from '../shared/rules';
 
 const STATUS_TONE = {
   pending: 'bg-amber-100 text-amber-900',
@@ -21,7 +22,7 @@ const STATUS_TONE = {
   delivered: 'bg-emerald-100 text-emerald-900',
   cancelled: 'bg-rose-100 text-rose-900',
 };
-const PAY_TONE = { unpaid: 'bg-amber-100 text-amber-900', paid: 'bg-emerald-100 text-emerald-900', refunded: 'bg-slate-200 text-slate-800' };
+const PAY_TONE = { unpaid: 'bg-amber-100 text-amber-900', advance_paid: 'bg-sky-100 text-sky-900', paid: 'bg-emerald-100 text-emerald-900', refunded: 'bg-slate-200 text-slate-800' };
 
 /** The printable receipt document (also used in the admin panel and the PDF). */
 export function ReceiptDoc({ o, lang: forcedLang, docRef }) {
@@ -34,6 +35,11 @@ export function ReceiptDoc({ o, lang: forcedLang, docRef }) {
   const phone = c.contact_phone;
   const address = lang === 'en' ? c.contact_address_en : c.contact_address_bn;
   const district = lang === 'en' ? o.district : districtBn(o.district);
+  const state = paymentState(o);
+  const { advance } = paymentBreakdown(o);
+  const received = state === 'paid' ? o.grand_total : state === 'refunded' ? 0 : o.amount_paid || 0;
+  const due = o.grand_total != null && state !== 'refunded' ? Math.max(0, o.grand_total - received) : null;
+  const pendingCell = <span className="text-xs font-semibold text-[#94721f]">{t('pay.afterDelivery')}</span>;
   const serif = { fontFamily: 'Georgia, "Times New Roman", serif' };
   const script = { fontFamily: 'Galada, "Anek Bangla", serif' };
   const label = 'text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-[#94721f]';
@@ -84,7 +90,8 @@ export function ReceiptDoc({ o, lang: forcedLang, docRef }) {
             <div className="flex gap-2"><dt className="w-28 shrink-0 text-[#0e2416]/55">{t('receipt.date')}</dt><dd>{formatDateTime(o.created_at, lang)}</dd></div>
             <div className="flex gap-2"><dt className="w-28 shrink-0 text-[#0e2416]/55">{t('receipt.orderType')}</dt><dd className="font-semibold">{t(`orderType.${o.order_type}`)}</dd></div>
             <div className="flex items-center gap-2"><dt className="w-28 shrink-0 text-[#0e2416]/55">{t('receipt.orderStatus')}</dt><dd><span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${STATUS_TONE[o.status]}`}>{t(`status.${o.status}`)}</span></dd></div>
-            <div className="flex items-center gap-2"><dt className="w-28 shrink-0 text-[#0e2416]/55">{t('receipt.paymentStatus')}</dt><dd><span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${PAY_TONE[o.payment_status]}`}>{t(`payment.${o.payment_status}`)}</span></dd></div>
+            <div className="flex gap-2"><dt className="w-28 shrink-0 text-[#0e2416]/55">{t('pay.title')}</dt><dd className="font-semibold">{t(`pay.plans.${o.payment_plan || 'cod'}`)[0]}</dd></div>
+            <div className="flex items-center gap-2"><dt className="w-28 shrink-0 text-[#0e2416]/55">{t('receipt.paymentStatus')}</dt><dd><span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${PAY_TONE[state]}`}>{t(`payment.${state}`)}</span></dd></div>
           </dl>
         </div>
         <div className="rounded-2xl bg-[#eef4e6] p-4">
@@ -139,6 +146,11 @@ export function ReceiptDoc({ o, lang: forcedLang, docRef }) {
                 <span className="text-2xl font-bold text-[#e3c57f]">{taka(o.grand_total, lang)}</span>
               )}
             </div>
+            <dl className="space-y-1.5 bg-[#fbf6e6] px-4 py-3.5 text-sm">
+              <div className="flex justify-between gap-3"><dt className="text-[#0e2416]/60">{t('pay.advance')}</dt><dd className="font-semibold">{advance != null ? taka(advance, lang) : pendingCell}</dd></div>
+              <div className="flex justify-between gap-3"><dt className="text-[#0e2416]/60">{t('pay.received')}</dt><dd className="font-semibold text-[#1f6440]">{taka(received, lang)}</dd></div>
+              <div className="flex justify-between gap-3 border-t border-[#0b3520]/10 pt-1.5"><dt className="font-semibold">{t('pay.balance')}</dt><dd className="font-bold">{due != null ? taka(due, lang) : pendingCell}</dd></div>
+            </dl>
           </div>
         </div>
         {o.notes && <p className="mt-5 rounded-xl bg-[#f3efe2] px-4 py-3 text-sm"><strong>{t('receipt.notes')}:</strong> {o.notes}</p>}
@@ -148,7 +160,7 @@ export function ReceiptDoc({ o, lang: forcedLang, docRef }) {
         <div className="text-xs text-[#0e2416]/60">
           <p className="text-lg text-[#0b3520]" style={script}>{t('receipt.thankYou')}</p>
           <p className="mt-1">
-            <strong className="text-[#0e2416]">{t('checkout.payment')}:</strong> {t('receipt.method')} · {t('receipt.footer')}
+            <strong className="text-[#0e2416]">{t('checkout.payment')}:</strong> {t(`pay.plans.${o.payment_plan || 'cod'}`)[1]} · {t('receipt.footer')}
           </p>
         </div>
         <img src={BRAND.seal} alt={t('hero.sealAlt')} className="h-20 w-20 rounded-full bg-white p-0.5 ring-1 ring-[#94721f]/30" />
@@ -203,7 +215,7 @@ export async function buildReceiptPdf(node) {
 }
 
 export default function Receipt({ token }) {
-  const { t } = useLang();
+  const { t, lang } = useLang();
   const [o, setO] = useState(null);
   const [state, setState] = useState('loading');
   const [busy, setBusy] = useState(false);
@@ -281,7 +293,7 @@ export default function Receipt({ token }) {
               <div className="border-t border-forest-900/[0.07] bg-mint-50/70 px-6 py-5 sm:px-8">
                 <p className="text-xs font-semibold uppercase tracking-[0.16em] text-gold-dark">{t('receipt.nextTitle')}</p>
                 <ol className="mt-3 grid gap-3 sm:grid-cols-3">
-                  {t('receipt.next').map((step, i) => {
+                  {[...t('receipt.next').slice(0, 2), t(`pay.next.${o.payment_plan || 'cod'}`)].map((step, i) => {
                     const Icon = [PhoneCall, Truck, Banknote][i];
                     return (
                       <li key={step} className="flex items-start gap-3 text-sm text-forest-900">
@@ -293,6 +305,19 @@ export default function Receipt({ token }) {
                     );
                   })}
                 </ol>
+                {paymentBreakdown(o).advance !== 0 && paymentState(o) === 'unpaid' && (
+                  <p className="mt-4 flex items-start gap-2.5 rounded-xl bg-white px-4 py-3 text-sm leading-relaxed text-forest-900 ring-1 ring-gold/30">
+                    <Banknote className="mt-0.5 h-4 w-4 shrink-0 text-gold-dark" />
+                    <span>
+                      <strong>
+                        {t('pay.now')}: {paymentBreakdown(o).advance != null ? taka(paymentBreakdown(o).advance, lang) : t('pay.afterDelivery')}
+                      </strong>
+                      <span className="block whitespace-pre-line text-ink/65">
+                        {(lang === 'en' ? o.company?.payment_instructions_en : o.company?.payment_instructions_bn) || t('pay.howTo')}
+                      </span>
+                    </span>
+                  </p>
+                )}
                 <p className="mt-4 text-xs text-ink/50">{t('receipt.saveLink')}</p>
               </div>
             </div>

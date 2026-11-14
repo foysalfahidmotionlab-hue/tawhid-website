@@ -70,8 +70,8 @@ export default function Dashboard() {
         <Stat label="Retail orders" value={s.retail} to="/admin/orders?type=retail" />
         <Stat label="Bags sold" value={new Intl.NumberFormat('en-IN').format(s.totalBags)} sub="excluding cancelled" />
         <Stat label="Total order value" value={money(s.totalValue)} sub="excluding cancelled" />
-        <Stat label="Confirmed revenue" value={money(s.confirmedRevenue)} sub="marked as paid" />
-        <Stat label="Pending payment" value={money(s.pendingPayment)} sub="unpaid orders" />
+        <Stat label="Money received" value={money(s.confirmedRevenue)} sub={`full payments + advances · ${s.advancePaid} advance paid`} />
+        <Stat label="Still to collect" value={money(s.pendingPayment)} sub="not yet paid in full" />
       </div>
 
       <div className="mt-6 grid gap-6 xl:grid-cols-5">
@@ -96,7 +96,7 @@ export default function Dashboard() {
                     </div>
                     <div className="flex shrink-0 flex-col items-end gap-1">
                       <span className="text-sm font-semibold">{money(o.grand_total ?? o.subtotal)}{o.grand_total == null && <span className="text-xs font-normal text-amber-700"> + delivery?</span>}</span>
-                      <span className="flex gap-1.5"><StatusBadge status={o.status} /><PayBadge status={o.payment_status} /></span>
+                      <span className="flex gap-1.5"><StatusBadge status={o.status} /><PayBadge order={o} /></span>
                     </div>
                   </Link>
                 </li>

@@ -6,7 +6,8 @@ import { api } from '../lib/api';
 import { taka, formatKg } from '../lib/format';
 import { navigate, goToSection } from '../lib/router';
 import { DISTRICTS } from '../shared/districts';
-import { normalizeBdPhone, WHOLESALE_MIN_BAGS } from '../shared/rules';
+import { normalizeBdPhone, WHOLESALE_MIN_BAGS, PAYMENT_PLANS, DEFAULT_PAYMENT_PLAN, paymentBreakdown } from '../shared/rules';
+import { useSite } from '../store/content';
 import { Container } from '../components/ui/primitives';
 import QtyStepper from '../components/shop/QtyStepper';
 import { OrderTypeToggle } from '../sections/Shop';
@@ -89,6 +90,8 @@ export default function Checkout() {
   const [quoteError, setQuoteError] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState('');
+  const [plan, setPlan] = useState(DEFAULT_PAYMENT_PLAN);
+  const { paymentInstructions } = useSite();
   const keyRef = useRef(newKey());
 
   const items = useMemo(() => lines.map((l) => ({ product_id: l.product.id, quantity: l.quantity })), [lines]);
@@ -150,7 +153,7 @@ export default function Checkout() {
     try {
       const out = await api('/orders', {
         method: 'POST',
-        body: { order_type: orderType, items, customer: form, idempotency_key: keyRef.current },
+        body: { order_type: orderType, items, customer: form, payment_plan: plan, idempotency_key: keyRef.current },
       });
       clearCart();
       keyRef.current = newKey();
@@ -168,6 +171,15 @@ export default function Checkout() {
 
   const err = (k) => (errors[k] ? 'border-rose-400' : 'border-forest-900/12');
   const dl = quote?.delivery;
+  const subtotalNow = quote?.subtotal ?? lines.reduce((a, l) => a + l.line_total, 0);
+  const breakdownFor = (key) =>
+    paymentBreakdown({
+      payment_plan: key,
+      subtotal: subtotalNow,
+      delivery_charge: form.district ? dl?.charge ?? null : null,
+      grand_total: form.district ? quote?.grand_total ?? null : null,
+    });
+  const pb = breakdownFor(plan);
 
   if (catalog.status === 'ready' && lines.length === 0) {
     return (
@@ -240,6 +252,50 @@ export default function Checkout() {
                   </Field>
                 </div>
               </div>
+            </Step>
+
+            <Step n={num(3)} title={t('pay.title')}>
+              <div role="radiogroup" aria-label={t('pay.title')} className="grid gap-3 sm:grid-cols-2">
+                {PAYMENT_PLANS.map((key) => {
+                  const on = plan === key;
+                  const [title, desc] = t(`pay.plans.${key}`);
+                  const { advance } = breakdownFor(key);
+                  return (
+                    <button
+                      key={key}
+                      type="button"
+                      role="radio"
+                      aria-checked={on}
+                      onClick={() => setPlan(key)}
+                      className={`relative flex flex-col rounded-2xl border p-4 text-left transition-all duration-300 ${
+                        on
+                          ? 'border-gold bg-gold/[0.08] shadow-[0_18px_36px_-24px_rgba(148,114,31,0.8)] ring-1 ring-gold'
+                          : 'border-forest-900/12 bg-white hover:border-forest-700/40'
+                      }`}
+                    >
+                      <span className="flex items-center justify-between gap-3">
+                        <span className="font-semibold text-forest-950">{title}</span>
+                        <span className={`grid h-5 w-5 shrink-0 place-items-center rounded-full border-2 ${on ? 'border-gold bg-gold' : 'border-forest-900/20'}`}>
+                          {on && <Check className="h-3 w-3 text-forest-950" strokeWidth={3.5} />}
+                        </span>
+                      </span>
+                      <span className="mt-1 text-xs leading-relaxed text-ink/55">{desc}</span>
+                      <span className="mt-3 border-t border-dashed border-forest-900/10 pt-2.5 text-sm">
+                        <span className="text-ink/50">{t('pay.now')}: </span>
+                        {advance != null ? (
+                          <strong className="text-forest-900">{taka(advance, lang)}</strong>
+                        ) : (
+                          <span className="text-xs font-semibold text-gold-dark">{t('pay.afterDelivery')}</span>
+                        )}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+              <p className="mt-4 flex items-start gap-2.5 rounded-xl bg-mint-50 px-4 py-3 text-sm leading-relaxed text-forest-900 ring-1 ring-forest-900/[0.06]">
+                <Banknote className="mt-0.5 h-4 w-4 shrink-0 text-gold-dark" />
+                <span className="whitespace-pre-line">{paymentInstructions || t('pay.howTo')}</span>
+              </p>
             </Step>
           </div>
 
@@ -322,10 +378,24 @@ export default function Checkout() {
                 </div>
               </dl>
 
+              <dl className="mt-4 space-y-2 rounded-2xl bg-gold/[0.1] px-4 py-3.5 text-sm ring-1 ring-gold/25">
+                <div className="flex justify-between gap-4">
+                  <dt className="font-semibold text-gold-light">{t(`pay.plans.${plan}`)[0]}</dt>
+                </div>
+                <div className="flex justify-between gap-4">
+                  <dt className="text-cream/70">{t('pay.now')}</dt>
+                  <dd className="text-right font-semibold">{pb.advance != null ? taka(pb.advance, lang) : <span className="text-xs text-gold-light">{t('pay.afterDelivery')}</span>}</dd>
+                </div>
+                <div className="flex justify-between gap-4">
+                  <dt className="text-cream/70">{t('pay.onDelivery')}</dt>
+                  <dd className="text-right font-semibold">{pb.balance != null ? taka(pb.balance, lang) : <span className="text-xs text-gold-light">{t('pay.afterDelivery')}</span>}</dd>
+                </div>
+              </dl>
+
               <ul className="mt-5 space-y-2.5 rounded-2xl bg-white/[0.05] px-4 py-4 text-xs leading-relaxed text-cream/70 ring-1 ring-white/[0.06]">
                 <li className="flex items-start gap-2.5">
                   <Banknote className="mt-0.5 h-4 w-4 shrink-0 text-gold-light" />
-                  <span><strong className="text-cream">{t('checkout.payment')}:</strong> {t('shop.cod')}</span>
+                  <span><strong className="text-cream">{t('checkout.payment')}:</strong> {t(`pay.plans.${plan}`)[1]}</span>
                 </li>
                 <li className="flex items-start gap-2.5">
                   <ReceiptText className="mt-0.5 h-4 w-4 shrink-0 text-gold-light" />

@@ -156,6 +156,11 @@ CREATE TABLE IF NOT EXISTS settings (
 
 db.exec(SCHEMA);
 
+// Columns added after the first release (kept as simple ALTERs so old databases upgrade in place).
+const orderCols = new Set(db.prepare('PRAGMA table_info(orders)').all().map((c) => c.name));
+if (!orderCols.has('payment_plan')) db.exec("ALTER TABLE orders ADD COLUMN payment_plan TEXT NOT NULL DEFAULT 'cod'");
+if (!orderCols.has('amount_paid')) db.exec('ALTER TABLE orders ADD COLUMN amount_paid INTEGER NOT NULL DEFAULT 0');
+
 // ---- seed (first run only) ------------------------------------------------
 const hasProducts = db.prepare('SELECT COUNT(*) AS n FROM products').get().n > 0;
 if (!hasProducts) {

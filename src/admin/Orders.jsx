@@ -68,6 +68,7 @@ export default function Orders() {
           <select className={`${inputCls} w-auto`} value={f.payment} onChange={set('payment')} aria-label="Payment">
             <option value="">Any payment</option>
             <option value="unpaid">Unpaid</option>
+            <option value="advance_paid">Advance paid</option>
             <option value="paid">Paid</option>
             <option value="refunded">Refunded</option>
           </select>
@@ -105,7 +106,7 @@ export default function Orders() {
                   <td className="whitespace-nowrap px-3 py-3 text-right font-semibold">
                     {o.grand_total != null ? money(o.grand_total) : <span title="Delivery charge not set">{money(o.subtotal)} <span className="text-xs font-normal text-amber-700">+ delivery?</span></span>}
                   </td>
-                  <td className="px-3 py-3"><PayBadge status={o.payment_status} /></td>
+                  <td className="px-3 py-3"><PayBadge order={o} /></td>
                   <td className="px-3 py-3"><StatusBadge status={o.status} /></td>
                   <td className="px-3 py-3 pr-5">
                     <Link to={`/admin/orders/${o.id}`} onClick={(e) => e.stopPropagation()} className="font-semibold text-forest-700 hover:underline">View</Link>

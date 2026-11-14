@@ -7,7 +7,7 @@ import {
 } from '../auth.js';
 import { loadOrder } from '../orders.js';
 import { uploadMiddleware, saveImage } from '../uploads.js';
-import { NEXT_STATUS, ORDER_STATUSES, retailPrice } from '../../src/shared/rules.js';
+import { NEXT_STATUS, ORDER_STATUSES, retailPrice, paymentBreakdown, paymentState } from '../../src/shared/rules.js';
 import { DISTRICT_KEYS } from '../../src/shared/districts.js';
 
 export const adminRouter = Router();
@@ -55,7 +55,7 @@ adminRouter.post('/password', (req, res) => {
 const dhakaDay = (iso) => new Date(iso).toLocaleDateString('en-CA', { timeZone: 'Asia/Dhaka' });
 
 adminRouter.get('/stats', (_req, res) => {
-  const rows = db.prepare('SELECT status, order_type, total_bags, subtotal, delivery_charge, grand_total, payment_status, created_at FROM orders').all();
+  const rows = db.prepare('SELECT status, order_type, total_bags, subtotal, delivery_charge, grand_total, payment_status, amount_paid, created_at FROM orders').all();
   const live = rows.filter((r) => r.status !== 'cancelled');
   const value = (r) => r.grand_total ?? r.subtotal + (r.delivery_charge ?? 0);
   const byStatus = Object.fromEntries(ORDER_STATUSES.map((s) => [s, rows.filter((r) => r.status === s).length]));
@@ -70,7 +70,7 @@ adminRouter.get('/stats', (_req, res) => {
   const recent = db
     .prepare(
       `SELECT id, order_no, created_at, customer_name, customer_phone, order_type, total_bags, subtotal,
-              delivery_charge, grand_total, payment_status, status FROM orders ORDER BY id DESC LIMIT 8`
+              delivery_charge, grand_total, payment_status, payment_plan, amount_paid, status FROM orders ORDER BY id DESC LIMIT 8`
     )
     .all();
 
@@ -81,8 +81,10 @@ adminRouter.get('/stats', (_req, res) => {
     retail: rows.filter((r) => r.order_type === 'retail').length,
     totalBags: live.reduce((a, r) => a + r.total_bags, 0),
     totalValue: live.reduce((a, r) => a + value(r), 0),
-    confirmedRevenue: live.filter((r) => r.payment_status === 'paid').reduce((a, r) => a + value(r), 0),
-    pendingPayment: live.filter((r) => r.payment_status === 'unpaid').reduce((a, r) => a + value(r), 0),
+    // money actually received (full payments + advances), and what is still to collect
+    confirmedRevenue: live.filter((r) => r.payment_status !== 'refunded').reduce((a, r) => a + (r.payment_status === 'paid' ? value(r) : r.amount_paid), 0),
+    pendingPayment: live.filter((r) => r.payment_status === 'unpaid').reduce((a, r) => a + Math.max(0, value(r) - r.amount_paid), 0),
+    advancePaid: live.filter((r) => paymentState(r) === 'advance_paid').length,
     pendingDelivery: live.filter((r) => r.delivery_charge == null).length,
     chart,
     recent,
@@ -106,9 +108,13 @@ function orderFilters(q) {
     where.push('order_type = ?');
     args.push(q.type);
   }
-  if (q.payment === 'paid' || q.payment === 'unpaid' || q.payment === 'refunded') {
+  if (q.payment === 'paid' || q.payment === 'refunded') {
     where.push('payment_status = ?');
     args.push(q.payment);
+  } else if (q.payment === 'unpaid') {
+    where.push("payment_status = 'unpaid' AND amount_paid = 0");
+  } else if (q.payment === 'advance_paid') {
+    where.push("payment_status = 'unpaid' AND amount_paid > 0");
   }
   // Dates are Dhaka calendar days (UTC+6).
   if (/^\d{4}-\d{2}-\d{2}$/.test(q.from || '')) {
@@ -134,7 +140,7 @@ adminRouter.get('/orders', (req, res) => {
   const rows = db
     .prepare(
       `SELECT id, order_no, created_at, customer_name, customer_phone, district, upazila, order_type, total_bags,
-              subtotal, delivery_charge, grand_total, payment_status, status
+              subtotal, delivery_charge, grand_total, payment_status, payment_plan, amount_paid, status
        FROM orders ${sql} ORDER BY id DESC LIMIT ? OFFSET ?`
     )
     .all(...args, size, (page - 1) * size)
@@ -147,7 +153,8 @@ adminRouter.get('/orders.csv', (req, res) => {
   const rows = db.prepare(`SELECT * FROM orders ${sql} ORDER BY id DESC`).all(...args);
   const head = [
     'Order ID', 'Date (Dhaka)', 'Customer', 'Mobile', 'Address', 'Upazila/Area', 'District', 'Order type', 'Products',
-    'Total bags', 'Subtotal (BDT)', 'Delivery (BDT)', 'Grand total (BDT)', 'Payment', 'Status', 'Customer notes', 'Internal notes',
+    'Total bags', 'Subtotal (BDT)', 'Delivery (BDT)', 'Grand total (BDT)', 'Payment option', 'Advance due (BDT)', 'Received (BDT)',
+    'Payment', 'Status', 'Customer notes', 'Internal notes',
   ];
   const esc = (v) => {
     const s = v == null ? '' : String(v);
@@ -161,7 +168,9 @@ adminRouter.get('/orders.csv', (req, res) => {
         new Date(o.created_at).toLocaleString('en-GB', { timeZone: 'Asia/Dhaka' }),
         o.customer_name, o.customer_phone, o.address, o.upazila, o.district, o.order_type,
         itemsSummary.get(o.id).s, o.total_bags, o.subtotal,
-        o.delivery_charge ?? 'to be confirmed', o.grand_total ?? 'pending', o.payment_status, o.status, o.notes, o.internal_notes,
+        o.delivery_charge ?? 'to be confirmed', o.grand_total ?? 'pending', o.payment_plan,
+        paymentBreakdown(o).advance ?? 'pending', o.payment_status === 'paid' ? o.grand_total : o.amount_paid,
+        paymentState(o), o.status, o.notes, o.internal_notes,
       ].map(esc).join(',')
     );
   }
@@ -213,13 +222,26 @@ adminRouter.post('/orders/:id/status', (req, res) => {
 adminRouter.post('/orders/:id/payment', (req, res) => {
   const o = loadOrder('id', Number(req.params.id));
   if (!o) return bad(res, 'Order not found', 404);
+  // to: 'advance_paid' (advance received) | 'paid' (everything received) | 'unpaid' | 'refunded'
   const to = String(req.body?.payment_status || '');
-  if (!['unpaid', 'paid', 'refunded'].includes(to)) return bad(res, 'Invalid payment status.');
-  if (to === 'paid' && o.grand_total == null) return bad(res, 'Confirm the delivery charge before marking as paid.');
-  if (to === o.payment_status) return res.json({ ok: true });
+  if (!['unpaid', 'advance_paid', 'paid', 'refunded'].includes(to)) return bad(res, 'Invalid payment status.');
+  const from = paymentState(o);
+  if (to === from) return res.json({ ok: true });
+  let status = to;
+  let paid = 0;
+  if (to === 'paid') {
+    if (o.grand_total == null) return bad(res, 'Confirm the delivery charge before marking as paid.');
+    paid = o.grand_total;
+  } else if (to === 'advance_paid') {
+    const { advance } = paymentBreakdown(o);
+    if (advance == null) return bad(res, 'Confirm the delivery charge first — the advance depends on it.');
+    if (advance <= 0) return bad(res, 'This order has no advance to receive.');
+    status = 'unpaid';
+    paid = advance;
+  }
   tx(() => {
-    db.prepare('UPDATE orders SET payment_status = ? WHERE id = ?').run(to, o.id);
-    history.run(o.id, 'payment', o.payment_status, to, String(req.body?.note || '').slice(0, 500), req.admin.id);
+    db.prepare('UPDATE orders SET payment_status = ?, amount_paid = ? WHERE id = ?').run(status, paid, o.id);
+    history.run(o.id, 'payment', from, to, String(req.body?.note || '').slice(0, 500), req.admin.id);
     touch.run(o.id);
   });
   res.json({ ok: true });
@@ -427,6 +449,7 @@ const CONTENT_TEXT_KEYS = [
   'hero_title_bn', 'hero_title_en', 'hero_sub_bn', 'hero_sub_en',
   'company_name_bn', 'company_name_en', 'company_short_bn', 'company_short_en',
   'contact_address_bn', 'contact_address_en', 'contact_phone', 'contact_email', 'capacity',
+  'payment_instructions_bn', 'payment_instructions_en',
 ];
 const CONTENT_IMAGE_KEYS = ['hero_bg_image', 'story_banner_image', 'footer_banner_image'];
 const isUploadUrl = (v) => v === '' || v == null || /^\/(uploads|images)\/[\w./-]+$/.test(v);
@@ -436,7 +459,7 @@ adminRouter.get('/content', (_req, res) => res.json(getSetting('content', {})));
 adminRouter.put('/content', (req, res) => {
   const b = req.body || {};
   const out = {};
-  for (const k of CONTENT_TEXT_KEYS) if (b[k] != null && String(b[k]).trim()) out[k] = String(b[k]).trim().slice(0, 400);
+  for (const k of CONTENT_TEXT_KEYS) if (b[k] != null && String(b[k]).trim()) out[k] = String(b[k]).trim().slice(0, 600);
   if (out.capacity && !/^\d{1,5}$/.test(out.capacity)) return bad(res, 'Capacity must be a whole number of tons.');
   for (const k of CONTENT_IMAGE_KEYS) {
     if (!isUploadUrl(b[k])) return bad(res, 'Invalid image.');

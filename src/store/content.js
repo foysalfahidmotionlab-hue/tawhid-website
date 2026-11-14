@@ -38,6 +38,7 @@ export function useSite() {
     brandName: pick('company_name'),
     heroTitle: pick('hero_title') ? parseRichText(pick('hero_title')) : null,
     heroSub: pick('hero_sub'),
+    paymentInstructions: pick('payment_instructions'),
     heroBg: c.hero_bg_image || images.greenField,
     storyBanner: c.story_banner_image || images.villageField,
     footerBanner: c.footer_banner_image || images.heroField,

@@ -39,3 +39,38 @@ export const NEXT_STATUS = {
   delivered: [],
   cancelled: [],
 };
+
+// ---- payment plans -------------------------------------------------------
+/**
+ * How the customer pays (chosen at checkout):
+ *  advance10 — 10% of the product price in advance, the rest on delivery
+ *  delivery  — the delivery charge in advance, the product price on delivery
+ *  advance50 — 50% of the product price in advance, the rest on delivery
+ *  full      — the full amount in advance
+ * Older orders have 'cod' (everything on delivery).
+ */
+export const PAYMENT_PLANS = ['advance10', 'delivery', 'advance50', 'full'];
+export const DEFAULT_PAYMENT_PLAN = 'advance10';
+
+/**
+ * Advance and balance for an order. `null` means "not known yet" (the delivery
+ * charge is still to be confirmed).
+ */
+export function paymentBreakdown({ payment_plan, subtotal, delivery_charge, grand_total }) {
+  let advance;
+  switch (payment_plan) {
+    case 'advance10': advance = Math.round(subtotal * 0.1); break;
+    case 'advance50': advance = Math.round(subtotal * 0.5); break;
+    case 'delivery': advance = delivery_charge ?? null; break;
+    case 'full': advance = grand_total ?? null; break;
+    default: advance = 0;
+  }
+  const balance = grand_total != null && advance != null ? Math.max(0, grand_total - advance) : null;
+  return { advance, balance };
+}
+
+/** Customer-facing payment state: 'paid' | 'advance_paid' | 'unpaid' | 'refunded'. */
+export function paymentState({ payment_status, amount_paid }) {
+  if (payment_status === 'paid' || payment_status === 'refunded') return payment_status;
+  return amount_paid > 0 ? 'advance_paid' : 'unpaid';
+}
