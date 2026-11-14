@@ -1,41 +1,49 @@
-import { Wheat } from 'lucide-react';
-import { site } from '../../config/site';
 import { useLang } from '../../i18n/LanguageContext';
 import { useSite } from '../../store/content';
 
-/** Emblem logo placeholder — set `site.logo` to an image path to use the real logo. */
-export default function Logo({ tone = 'dark', className = '' }) {
-  const { t } = useLang();
+export const BRAND = {
+  logo: '/images/brand/tawhid-logo.webp', // full Tawhid Auto Rice Mill logo
+  emblem: '/images/brand/tawhid-emblem.webp', // the emblem alone (rice ears + T leaf)
+  seal: '/images/brand/zinnia-seal.webp', // Zinnia trademark seal
+};
+
+/**
+ * Tawhid Auto Rice Mill logo.
+ * - default: the emblem with the name beside it (header, menus)
+ * - `full`: the complete logo artwork (footer)
+ */
+export default function Logo({ tone = 'dark', full = false, className = '' }) {
+  const { t, lang } = useLang();
   const { brandShort } = useSite();
   const light = tone === 'light';
+
+  if (full) {
+    return (
+      <a href="/" className={`inline-block shrink-0 ${className}`} aria-label={t('brand.name')}>
+        <img src={BRAND.logo} alt={t('brand.name')} className="h-24 w-auto" />
+      </a>
+    );
+  }
+
   return (
-    <a href="/" className={`flex shrink-0 items-center gap-3 ${className}`} aria-label={t('brand.name')}>
-      {site.logo ? (
-        <img src={site.logo} alt={t('brand.name')} className="h-12 w-auto" />
-      ) : (
-        <>
-          <span
-            className={`relative grid h-12 w-12 place-items-center rounded-full border transition-colors duration-500 ${
-              light ? 'border-gold-light/70 text-gold-light' : 'border-gold-dark/60 text-gold-dark'
-            }`}
-          >
-            <span className="absolute inset-[3px] rounded-full border border-current opacity-30" />
-            <Wheat className="h-5 w-5" strokeWidth={1.5} />
-          </span>
-          <span className="leading-none">
-            <span className={`block font-display text-[1.5rem] font-normal tracking-tight transition-colors duration-500 ${light ? 'text-cream' : 'text-forest-950'}`}>
-              {brandShort || t('brand.short')}
-            </span>
-            <span
-              className={`mt-1 block text-[0.55rem] font-semibold uppercase tracking-[0.32em] transition-colors duration-500 ${
-                light ? 'text-cream/60' : 'text-forest-700/70'
-              }`}
-            >
-              {t('brand.descriptor')}
-            </span>
-          </span>
-        </>
-      )}
+    <a href="/" className={`flex shrink-0 items-center gap-2.5 ${className}`} aria-label={t('brand.name')}>
+      <img src={BRAND.emblem} alt="" className="h-11 w-auto sm:h-12" />
+      <span className="leading-none">
+        <span
+          className={`block text-[1.45rem] font-normal tracking-tight transition-colors duration-500 ${
+            light ? 'text-cream' : 'text-[#0f4a2a]'
+          } ${lang === 'en' ? 'font-["Fraunces"] font-semibold uppercase tracking-[0.04em]' : 'font-display'}`}
+        >
+          {brandShort || t('brand.short')}
+        </span>
+        <span
+          className={`mt-1 block text-[0.55rem] font-semibold uppercase tracking-[0.32em] transition-colors duration-500 ${
+            light ? 'text-cream/60' : 'text-[#0f4a2a]/75'
+          }`}
+        >
+          {t('brand.descriptor')}
+        </span>
+      </span>
     </a>
   );
 }

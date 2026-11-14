@@ -5,7 +5,7 @@ import { images } from '../../data/images';
 import { useLang } from '../../i18n/LanguageContext';
 import { Container, Rich } from '../ui/primitives';
 import Button from '../ui/Button';
-import Logo from '../ui/Logo';
+import Logo, { BRAND } from '../ui/Logo';
 import SocialIcon from '../ui/SocialIcon';
 import { useSite } from '../../store/content';
 
@@ -42,8 +42,17 @@ export default function Footer() {
         {/* columns */}
         <div className="grid gap-12 py-14 sm:grid-cols-2 lg:grid-cols-12">
           <div className="lg:col-span-4">
-            <Logo tone="light" />
+            <div className="inline-block rounded-2xl bg-cream px-5 py-4 shadow-[0_20px_40px_-25px_rgba(0,0,0,0.6)]">
+              <Logo full />
+            </div>
             <p className="mt-6 max-w-xs text-sm leading-relaxed text-cream/50">{t('footer.desc', { cap: num(content.capacity) })}</p>
+            <div className="mt-6 flex max-w-xs items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.04] p-3">
+              <img src={BRAND.seal} alt="" loading="lazy" className="h-14 w-14 shrink-0 rounded-full bg-white p-0.5" />
+              <p className="text-xs leading-relaxed text-cream/60">
+                <span className="block text-sm font-semibold text-cream">{t('brand.trademark')}</span>
+                {t('hero.brandOf')}
+              </p>
+            </div>
             <div className="mt-6 flex gap-3">
               {site.socials.map((s) => (
                 <a

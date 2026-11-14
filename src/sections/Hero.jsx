@@ -1,37 +1,15 @@
 import { useEffect } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { ArrowRight, Wheat } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import { products } from '../data/products';
 import { useLang } from '../i18n/LanguageContext';
-import { Container, Rich, ease } from '../components/ui/primitives';
+import { Container, Eyebrow, Rich, ease } from '../components/ui/primitives';
+import { BRAND } from '../components/ui/Logo';
 import Button from '../components/ui/Button';
 import { useSite } from '../store/content';
 
 const AUTOPLAY_MS = 6500;
 const SWING_DEG = 42; // how far packs travel along the circular path
-
-/** The Zinia™ brand lockup: emblem + wordmark + "a brand of Tawhid Auto Rice Mill". */
-function BrandLockup() {
-  const { t, lang } = useLang();
-  return (
-    <div className="flex items-center gap-4">
-      <span className="relative grid h-16 w-16 shrink-0 place-items-center rounded-full bg-forest-800 text-gold-light shadow-[0_14px_30px_-14px_rgba(11,53,32,0.8)] ring-1 ring-gold/60 ring-offset-[3px] ring-offset-transparent">
-        <span className="absolute inset-[4px] rounded-full border border-gold-light/40" />
-        <Wheat className="h-7 w-7" strokeWidth={1.4} />
-      </span>
-      <div>
-        <p className="flex items-baseline gap-2 leading-none">
-          <span className="font-['Fraunces'] text-[2.6rem] font-medium italic tracking-[-0.02em] text-forest-900" lang="en">
-            Zinia
-          </span>
-          <span className="-translate-y-4 text-sm font-semibold text-gold-dark" lang="en">™</span>
-          {lang === 'bn' && <span className="font-display text-2xl text-forest-700/80">{t('hero.brandBn')}</span>}
-        </p>
-        <p className="mt-1.5 text-[0.78rem] font-medium tracking-wide text-forest-800/70">{t('hero.brandOf')}</p>
-      </div>
-    </div>
-  );
-}
 
 /**
  * Brand-first hero: the Zinia™ lockup and headline on the left; on the right
@@ -81,9 +59,8 @@ export default function Hero({ activeId, autoplay, onAutoAdvance, onChoose, onIn
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1, delay: 0.3, ease }}
           >
-            <BrandLockup />
-            <div className="mt-7 h-px w-24 bg-gradient-to-r from-gold to-transparent" />
-            <h1 className="hero-title mt-7 font-display text-[3.2rem] font-light leading-[1] tracking-[-0.03em] sm:text-7xl lg:text-[4.4rem] xl:text-[5rem]">
+            <Eyebrow>{t('hero.eyebrow')}</Eyebrow>
+            <h1 className="hero-title mt-6 font-display text-[3.2rem] font-light leading-[1] tracking-[-0.03em] sm:text-7xl lg:text-[4.4rem] xl:text-[5rem]">
               <Rich parts={content.heroTitle || t('hero.title')} />
             </h1>
             <p className="mt-5 max-w-md text-lg leading-relaxed text-ink/65">{content.heroSub || t('hero.sub')}</p>
@@ -114,14 +91,22 @@ export default function Hero({ activeId, autoplay, onAutoAdvance, onChoose, onIn
             transition={{ duration: 1.2, delay: 0.45, ease }}
             className="relative mx-auto mt-4 aspect-square w-full max-w-[26rem] [container-type:inline-size] sm:max-w-[34rem] lg:col-span-7 lg:mt-0 lg:max-w-[44rem]"
           >
-            {/* the brand, written large behind the pack */}
-            <span
-              aria-hidden="true"
-              lang="en"
-              className="text-brand-watermark pointer-events-none absolute inset-x-0 top-[-3%] select-none whitespace-nowrap pr-[4%] text-center font-['Fraunces'] text-[32cqw] font-semibold italic leading-none tracking-[-0.04em]"
+            {/* Zinnia trademark seal, like a quality stamp on the stage */}
+            <motion.figure
+              initial={{ opacity: 0, scale: 0.6 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ type: 'spring', stiffness: 120, damping: 14, delay: 0.9 }}
+              className="absolute left-0 top-[6%] z-10 w-[24%] min-w-[5.5rem] max-w-[9rem] sm:left-[2%]"
             >
-              Zinia
-            </span>
+              <img
+                src={BRAND.seal}
+                alt={t('hero.sealAlt')}
+                className="w-full -rotate-[8deg] rounded-full bg-white p-1 shadow-[0_18px_40px_-18px_rgba(11,53,32,0.6)] ring-1 ring-gold/40"
+              />
+              <figcaption className="mt-2 text-center text-[0.68rem] font-semibold tracking-wide text-forest-800/80">
+                {t('hero.sealCaption')}
+              </figcaption>
+            </motion.figure>
 
             {/* disc + slowly turning gold orbit */}
             <div className="absolute inset-[13%] top-[17%] rounded-full bg-stage-disc shadow-[inset_0_-30px_60px_-30px_rgba(31,100,64,0.25),0_40px_80px_-40px_rgba(11,53,32,0.45)] ring-1 ring-gold/35" />

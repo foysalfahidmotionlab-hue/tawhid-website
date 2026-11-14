@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Banknote, Check, Download, Loader2, PhoneCall, Printer, Truck, Wheat } from 'lucide-react';
+import { Banknote, Check, Download, Loader2, PhoneCall, Printer, Truck } from 'lucide-react';
 import '@fontsource/anek-bangla/400.css';
 import '@fontsource/anek-bangla/500.css';
 import '@fontsource/anek-bangla/600.css';
@@ -11,6 +11,7 @@ import { taka, formatDateTime, formatKg } from '../lib/format';
 import { Link } from '../lib/router';
 import { districtBn } from '../shared/districts';
 import { Container } from '../components/ui/primitives';
+import { BRAND } from '../components/ui/Logo';
 
 const STATUS_TONE = {
   pending: 'bg-amber-100 text-amber-900',
@@ -55,9 +56,8 @@ export function ReceiptDoc({ o, lang: forcedLang, docRef }) {
 
       <header className="relative flex flex-wrap items-center justify-between gap-5 bg-[#0b3520] px-6 py-7 text-[#f6faf0] sm:px-9">
         <div className="flex items-center gap-4">
-          <span className="relative grid h-16 w-16 shrink-0 place-items-center rounded-full border border-[#e3c57f]/80 text-[#e3c57f]">
-            <span className="absolute inset-[4px] rounded-full border border-[#e3c57f]/30" />
-            <Wheat className="h-7 w-7" strokeWidth={1.4} />
+          <span className="grid h-16 w-16 shrink-0 place-items-center rounded-full bg-[#fdfcf7] ring-2 ring-[#e3c57f]/70">
+            <img src={BRAND.emblem} alt="" className="h-10 w-auto" />
           </span>
           <div>
             <p className="text-[1.65rem] leading-tight" style={script}>{company}</p>
@@ -151,7 +151,7 @@ export function ReceiptDoc({ o, lang: forcedLang, docRef }) {
             <strong className="text-[#0e2416]">{t('checkout.payment')}:</strong> {t('receipt.method')} · {t('receipt.footer')}
           </p>
         </div>
-        <p className="text-2xl italic text-[#94721f]" style={serif}>Zinia™</p>
+        <img src={BRAND.seal} alt={t('hero.sealAlt')} className="h-20 w-20 rounded-full bg-white p-0.5 ring-1 ring-[#94721f]/30" />
       </footer>
     </article>
   );

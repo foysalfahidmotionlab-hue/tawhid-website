@@ -6,6 +6,7 @@ import { taka, formatKg } from '../lib/format';
 import { navigate } from '../lib/router';
 import { Container, Reveal, SectionHeading, ease } from '../components/ui/primitives';
 import QtyStepper from '../components/shop/QtyStepper';
+import { BRAND } from '../components/ui/Logo';
 import { WHOLESALE_MIN_BAGS } from '../shared/rules';
 
 export function OrderTypeToggle({ compact = false }) {
@@ -67,9 +68,12 @@ function ProductCard({ p, index }) {
     >
       {/* pack on a soft stage */}
       <div className="bg-card-tint relative flex min-h-[19rem] items-end justify-center overflow-hidden px-6 pb-6 pt-14 sm:w-[44%] sm:shrink-0 lg:w-auto xl:w-[44%]">
-        <span aria-hidden="true" lang="en" className="text-brand-watermark pointer-events-none absolute -left-2 top-12 select-none font-['Fraunces'] text-[5.5rem] font-semibold italic leading-none tracking-[-0.04em]">
-          Zinia
-        </span>
+        <img
+          src={BRAND.seal}
+          alt=""
+          loading="lazy"
+          className="absolute right-4 top-4 h-14 w-14 -rotate-6 rounded-full bg-white p-0.5 shadow-[0_10px_24px_-12px_rgba(11,53,32,0.6)] ring-1 ring-gold/40"
+        />
         <span className="absolute left-4 top-4 inline-flex items-center gap-1.5 rounded-full bg-white/80 px-3 py-1 text-xs font-semibold text-forest-900 ring-1 ring-forest-900/10 backdrop-blur">
           <Wheat className="h-3.5 w-3.5 text-gold-dark" />
           {formatKg(p.weight_kg, lang)}
